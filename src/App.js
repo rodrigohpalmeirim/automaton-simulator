@@ -53,21 +53,22 @@ export default class App extends Component {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
-    if (d !== 0) {
+    if (d > 0) {
       return (
         <g key={key}>
-          <line
-            x1={x1 + dx * endDistance / d}  // TODO remove hardcoded values
-            y1={y1 + dy * endDistance / d}
-            x2={x2 - dx * (endDistance + 15) / d}
-            y2={y2 - dy * (endDistance + 15) / d}
+          {(d > 35) && (<line
+            x1={x1 + dx * 30 / d}  // TODO remove hardcoded values
+            y1={y1 + dy * 30 / d}
+            x2={x2 - dx * (endDistance + 14) / d}
+            y2={y2 - dy * (endDistance + 14) / d}
             style={{ stroke: "#88C0D0", strokeWidth: 5 }}
-          />
+          />)
+          }
           <polygon
             points={
               (x2 - dx * endDistance / d) + "," + (y2 - dy * endDistance / d) + " " +
-              (x2 - dx * (endDistance + 20) / d - 10 * dy / d) + "," + (y2 - dy * (endDistance + 20) / d + 10 * dx / d) + " " +
-              (x2 - dx * (endDistance + 20) / d + 10 * dy / d) + "," + (y2 - dy * (endDistance + 20) / d - 10 * dx / d)
+              (x2 - dx * (endDistance + 15) / d - 10 * dy / d) + "," + (y2 - dy * (endDistance + 15) / d + 10 * dx / d) + " " +
+              (x2 - dx * (endDistance + 15) / d + 10 * dy / d) + "," + (y2 - dy * (endDistance + 15) / d - 10 * dx / d)
             }
             fill="#88C0D0"
           />
@@ -130,7 +131,7 @@ export default class App extends Component {
     if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
     if (this.state.draggingArrow) document.removeEventListener("mousemove", this.dragArrow);
     this.setState({ draggingNode: false, draggingArrow: false })
-    this.arrowPos = {x1: 0, y1: 0, x2: 0, y2: 0}
+    this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
   }
 
   render() {
