@@ -13,14 +13,18 @@
   color: white;
 }
 
-.connection-input {
+#connection-box {
   background-color: #3B4252;
   padding: 5px;
   border-radius: 5px;
   font-size: medium;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  -webkit-user-select: none;
+  -moz-user-select: none;
 }
 
-.connection-input input {
+.connection-input {
   border: none;
   background-color: transparent/* #4C566A */;
   width: 15px;

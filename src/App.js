@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import { ConnectionInput } from "./ConnectionInput"
 
 export default class App extends Component {
 
@@ -11,6 +10,7 @@ export default class App extends Component {
       shift: false,
       draggingNode: false,
       draggingArrow: false,
+      editingConnection: false
     }
 
     this.dragNode = this.dragNode.bind(this);
@@ -18,6 +18,10 @@ export default class App extends Component {
     this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
     this.nodeMouseUpHandler = this.nodeMouseUpHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
+    this.mouseDownHandler = this.mouseDownHandler.bind(this);
+    this.changeConnectionAttributes = this.changeConnectionAttributes.bind(this);
+    this.cancelConnection = this.cancelConnection.bind(this);
+    this.keyDownHandler = this.keyDownHandler.bind(this);
 
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
 
@@ -36,17 +40,12 @@ export default class App extends Component {
       q1: {
         x: 200,
         y: 100,
-        connections: {
-          /* "a": {
-            node: "q2",
-          } */
-        }
+        connections: {}
       },
       q2: {
         x: 100,
         y: 200,
-        connections: {
-        }
+        connections: {}
       }
     }
   }
@@ -98,18 +97,16 @@ export default class App extends Component {
   }
 
   dragNode(event) {
-    const id = this.selected.getAttribute("id");
-    this.nodes[id].x = event.pageX - this.offset.x;
-    this.nodes[id].y = event.pageY - this.offset.y;
+    this.nodes[this.selectedNodeId].x = event.pageX - this.offset.x;
+    this.nodes[this.selectedNodeId].y = event.pageY - this.offset.y;
     this.forceUpdate();
   }
 
   dragArrow(event) {
-    const id = this.selected.getAttribute("id");
     this.arrowPos = {
-      node: id,
-      x1: this.nodes[id].x,
-      y1: this.nodes[id].y,
+      node: this.selectedNodeId,
+      x1: this.nodes[this.selectedNodeId].x,
+      y1: this.nodes[this.selectedNodeId].y,
       x2: event.pageX,
       y2: event.pageY
     }
@@ -117,10 +114,10 @@ export default class App extends Component {
   }
 
   nodeMouseDownHandler(event) {
-    this.selected = event.target;
+    this.selectedNodeId = event.target.getAttribute("id");
     this.offset = {
-      x: event.pageX - this.selected.getAttribute("cx"),
-      y: event.pageY - this.selected.getAttribute("cy")
+      x: event.pageX - this.nodes[this.selectedNodeId].x,
+      y: event.pageY - this.nodes[this.selectedNodeId].y
     };
     if (!this.state.shift) {
       this.setState({ draggingNode: true });
@@ -133,9 +130,46 @@ export default class App extends Component {
 
   nodeMouseUpHandler(event) {
     if (this.state.draggingArrow) {
-      const id = this.selected.getAttribute("id");
-      this.nodes[id].connections[""] = {
-        node: event.target.getAttribute("id")
+      const endNodeId = event.target.getAttribute("id");
+      this.nodes[this.selectedNodeId].connections[""] = {
+        node: endNodeId
+      }
+      this.arrowCenter = {
+        x: (this.nodes[this.selectedNodeId].x + this.nodes[endNodeId].x) / 2,
+        y: (this.nodes[this.selectedNodeId].y + this.nodes[endNodeId].y) / 2
+      }
+      this.setState({ editingConnection: true });
+      document.addEventListener("mousedown", this.mouseDownHandler);
+      document.addEventListener("keydown", this.keyDownHandler);
+    }
+  }
+
+  changeConnectionAttributes(value, newValue, move) {
+    this.nodes[this.selectedNodeId].connections[value] = this.nodes[this.selectedNodeId].connections[""];
+    delete this.nodes[this.selectedNodeId].connections[""];
+    this.nodes[this.selectedNodeId].connections[value].newValue = newValue;
+    this.nodes[this.selectedNodeId].connections[value].move = move;
+  }
+
+  cancelConnection() {
+    delete this.nodes[this.selectedNodeId].connections[""];
+    this.setState({ editingConnection: false });
+    document.removeEventListener("mousedown", this.mouseDownHandler);
+    document.removeEventListener("keydown", this.keyDownHandler);
+  }
+
+  mouseDownHandler(event) {
+    if (event.target.className !== "connection-input" && event.target.id !== "connection-box") {
+      document.removeEventListener("mousedown", this.mouseDownHandler);
+      document.removeEventListener("keydown", this.keyDownHandler);
+      const value = document.getElementsByClassName("connection-input")[0].value;
+      const newValue = document.getElementsByClassName("connection-input")[1].value;
+      const move = document.getElementsByClassName("connection-input")[2].value;
+      if (value && newValue && move) {
+        this.changeConnectionAttributes(value, newValue, move)
+        this.setState({ editingConnection: false });
+      } else {
+        this.cancelConnection();
       }
     }
   }
@@ -145,6 +179,20 @@ export default class App extends Component {
     if (this.state.draggingArrow) document.removeEventListener("mousemove", this.dragArrow);
     this.setState({ draggingNode: false, draggingArrow: false });
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
+  }
+
+  keyDownHandler(event) {
+    const value = document.getElementsByClassName("connection-input")[0].value;
+    const newValue = document.getElementsByClassName("connection-input")[1].value;
+    const move = document.getElementsByClassName("connection-input")[2].value;
+    if (event.key === "Enter" && value && newValue && move) {
+      document.removeEventListener("mousedown", this.mouseDownHandler);
+      document.removeEventListener("keydown", this.keyDownHandler);
+      this.changeConnectionAttributes(value, newValue, move)
+      this.setState({ editingConnection: false });
+    } else if (event.key === "Escape") {
+      this.cancelConnection();
+    }
   }
 
   render() {
@@ -160,7 +208,11 @@ export default class App extends Component {
             {this.state.draggingArrow && this.arrow("user", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
             {Object.keys(this.nodes).map((id) => this.node(id))}
           </svg>
-          <ConnectionInput />
+          {this.state.editingConnection && (
+            <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
+              <input className="connection-input" type="text" name="value" maxLength="1" autoFocus /> → <input className="connection-input" type="text" name="newValue" maxLength="1" />, <input className="connection-input" type="text" name="move" maxLength="1" />
+            </form>
+          )}
         </header>
       </div>
     );
