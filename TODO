@@ -1,0 +1,3 @@
+fix arrows rendering on top of each other
+fix short arrows when nodes are too close
+fix connections replaced when new one created with same value
