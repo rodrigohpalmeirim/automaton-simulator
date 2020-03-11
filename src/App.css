@@ -12,3 +12,21 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.connection-input {
+  background-color: #3B4252;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: medium;
+}
+
+.connection-input input {
+  border: none;
+  background-color: transparent/* #4C566A */;
+  width: 15px;
+  height: 15px;
+  color: white;
+  font-size: medium;
+  text-align: center;
+  border-radius: 5px;
+}
