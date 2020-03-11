@@ -1,3 +1,8 @@
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
 .App {
   text-align: center;
 }
@@ -26,7 +31,7 @@
 
 .connection-input {
   border: none;
-  background-color: transparent/* #4C566A */;
+  background-color: #4C566A;
   width: 15px;
   height: 15px;
   color: white;

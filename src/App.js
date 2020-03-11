@@ -50,7 +50,7 @@ export default class App extends Component {
     }
   }
 
-  arrow(key, x1, y1, x2, y2, endDistance = 0) {
+  arrow(key, x1, y1, x2, y2, endDistance = 0, text = "") {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
@@ -73,6 +73,12 @@ export default class App extends Component {
             }
             fill="#88C0D0"
           />
+          {text && (
+            <g>
+              <rect x={(x1 + x2) / 2 - 28} y={(y1 + y2) / 2 - 10} height="20" width="56" rx="5" ry="5" fill="#88C0D0" />
+              <text x={(x1 + x2) / 2 - 23} y={(y1 + y2) / 2 + 5} fontSize="15" fill="#2E3440">{text}</text>
+            </g>
+          )}
         </g>
       );
     }
@@ -132,7 +138,9 @@ export default class App extends Component {
     if (this.state.draggingArrow) {
       const endNodeId = event.target.getAttribute("id");
       this.nodes[this.selectedNodeId].connections[""] = {
-        node: endNodeId
+        node: endNodeId,
+        newValue: "",
+        move: ""
       }
       this.arrowCenter = {
         x: (this.nodes[this.selectedNodeId].x + this.nodes[endNodeId].x) / 2,
@@ -152,7 +160,9 @@ export default class App extends Component {
   }
 
   cancelConnection() {
-    delete this.nodes[this.selectedNodeId].connections[""];
+    for (const id in this.nodes) {
+      delete this.nodes[id].connections[""];
+    }
     this.setState({ editingConnection: false });
     document.removeEventListener("mousedown", this.mouseDownHandler);
     document.removeEventListener("keydown", this.keyDownHandler);
@@ -160,6 +170,7 @@ export default class App extends Component {
 
   mouseDownHandler(event) {
     if (event.target.className !== "connection-input" && event.target.id !== "connection-box") {
+      console.log("test")
       document.removeEventListener("mousedown", this.mouseDownHandler);
       document.removeEventListener("keydown", this.keyDownHandler);
       const value = document.getElementsByClassName("connection-input")[0].value;
@@ -202,7 +213,15 @@ export default class App extends Component {
           <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseUp={this.mouseUpHandler}>
             {Object.keys(this.nodes).map((id) => {
               return Object.keys(this.nodes[id].connections).map((char, key) => {
-                return this.arrow(key, this.nodes[id].x, this.nodes[id].y, this.nodes[this.nodes[id].connections[char].node].x, this.nodes[this.nodes[id].connections[char].node].y, 30);
+                return this.arrow(
+                  key,
+                  this.nodes[id].x,
+                  this.nodes[id].y,
+                  this.nodes[this.nodes[id].connections[char].node].x,
+                  this.nodes[this.nodes[id].connections[char].node].y,
+                  30,
+                  char + "→" + this.nodes[id].connections[char].newValue + ", " + this.nodes[id].connections[char].move
+                );
               });
             })}
             {this.state.draggingArrow && this.arrow("user", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
