@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
+import { ConnectionInput } from "./ConnectionInput"
 
 export default class App extends Component {
 
@@ -14,7 +15,8 @@ export default class App extends Component {
 
     this.dragNode = this.dragNode.bind(this);
     this.dragArrow = this.dragArrow.bind(this);
-    this.mouseDownHandler = this.mouseDownHandler.bind(this);
+    this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
+    this.nodeMouseUpHandler = this.nodeMouseUpHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
 
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
@@ -24,20 +26,20 @@ export default class App extends Component {
         x: 50,
         y: 50,
         connections: {
-          "a": {
+          /* "a": {
             node: "q1",
             newValue: "b",
             move: "right"
-          }
+          } */
         }
       },
       q1: {
         x: 200,
         y: 100,
         connections: {
-          "a": {
+          /* "a": {
             node: "q2",
-          }
+          } */
         }
       },
       q2: {
@@ -80,7 +82,8 @@ export default class App extends Component {
   node(id) {
     return (
       <circle id={id} key={id} cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0"
-        onMouseDown={this.mouseDownHandler}
+        onMouseDown={this.nodeMouseDownHandler}
+        onMouseUp={this.nodeMouseUpHandler}
       />
     );
   }
@@ -104,6 +107,7 @@ export default class App extends Component {
   dragArrow(event) {
     const id = this.selected.getAttribute("id");
     this.arrowPos = {
+      node: id,
       x1: this.nodes[id].x,
       y1: this.nodes[id].y,
       x2: event.pageX,
@@ -112,7 +116,7 @@ export default class App extends Component {
     this.forceUpdate();
   }
 
-  mouseDownHandler(event) {
+  nodeMouseDownHandler(event) {
     this.selected = event.target;
     this.offset = {
       x: event.pageX - this.selected.getAttribute("cx"),
@@ -127,10 +131,19 @@ export default class App extends Component {
     }
   }
 
+  nodeMouseUpHandler(event) {
+    if (this.state.draggingArrow) {
+      const id = this.selected.getAttribute("id");
+      this.nodes[id].connections[""] = {
+        node: event.target.getAttribute("id")
+      }
+    }
+  }
+
   mouseUpHandler() {
     if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
     if (this.state.draggingArrow) document.removeEventListener("mousemove", this.dragArrow);
-    this.setState({ draggingNode: false, draggingArrow: false })
+    this.setState({ draggingNode: false, draggingArrow: false });
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
   }
 
@@ -147,6 +160,7 @@ export default class App extends Component {
             {this.state.draggingArrow && this.arrow("user", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
             {Object.keys(this.nodes).map((id) => this.node(id))}
           </svg>
+          <ConnectionInput />
         </header>
       </div>
     );
