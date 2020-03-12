@@ -34,7 +34,7 @@ export default class App extends Component {
     }
   }
 
-  arrow(key, node, char, x1, y1, x2, y2, endDistance = 0, text = "") {
+  renderArrow(key, node, char, x1, y1, x2, y2, endDistance = 0, text = "") {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
@@ -73,7 +73,7 @@ export default class App extends Component {
     }
   }
 
-  node(id) {
+  renderNode(id) {
     return (
       <circle id={id} key={id} cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0"
         onMouseDown={this.nodeMouseDownHandler}
@@ -109,19 +109,15 @@ export default class App extends Component {
     this.forceUpdate();
   }
 
-  nodeMouseDownHandler(event) {
-    this.selectedNodeId = event.target.getAttribute("id");
-    this.offset = {
-      x: event.pageX - this.nodes[this.selectedNodeId].x,
-      y: event.pageY - this.nodes[this.selectedNodeId].y
-    };
-    if (!this.state.shift) {
-      this.setState({ draggingNode: true });
-      document.addEventListener("mousemove", this.dragNode);
-    } else {
-      this.setState({ draggingArrow: true });
-      document.addEventListener("mousemove", this.dragArrow);
+  createNode(x, y) {
+    var newId = "q0";
+    for (const id in this.nodes) {
+      if (id.substr(1) >= newId.substr(1)) {
+        newId = "q" + (Number(id.substr(1)) + 1);
+      }
     }
+    this.nodes[newId] = { x: x, y: y, connections: {} }
+    return newId;
   }
 
   createConnection(endNodeId) {
@@ -156,6 +152,21 @@ export default class App extends Component {
     this.selectedConnectionChar = "";
   }
 
+  nodeMouseDownHandler(event) {
+    this.selectedNodeId = event.target.getAttribute("id");
+    this.offset = {
+      x: event.pageX - this.nodes[this.selectedNodeId].x,
+      y: event.pageY - this.nodes[this.selectedNodeId].y
+    };
+    if (!this.state.shift) {
+      this.setState({ draggingNode: true });
+      document.addEventListener("mousemove", this.dragNode);
+    } else {
+      this.setState({ draggingArrow: true });
+      document.addEventListener("mousemove", this.dragArrow);
+    }
+  }
+
   mouseDownHandler(event) {
     if (this.state.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
       const newChar = document.getElementsByClassName("connection-input")[0].value;
@@ -168,17 +179,6 @@ export default class App extends Component {
         this.cancelConnection();
       }
     }
-  }
-
-  createNode(x, y) {
-    var newId = "q0";
-    for (const id in this.nodes) {
-      if (id.substr(1) >= newId.substr(1)) {
-        newId = "q" + (Number(id.substr(1)) + 1);
-      }
-    }
-    this.nodes[newId] = { x: x, y: y, connections: {} }
-    return newId;
   }
 
   mouseUpHandler(event) {
@@ -217,7 +217,7 @@ export default class App extends Component {
           <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseUp={this.mouseUpHandler}>
             {Object.keys(this.nodes).map((id) => {
               return Object.keys(this.nodes[id].connections).map((char, key) => {
-                return this.arrow(
+                return this.renderArrow(
                   key,
                   id,
                   char,
@@ -230,8 +230,8 @@ export default class App extends Component {
                 );
               });
             })}
-            {this.state.draggingArrow && this.arrow("user", "", "", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
-            {Object.keys(this.nodes).map((id) => this.node(id))}
+            {this.state.draggingArrow && this.renderArrow("user", "", "", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
+            {Object.keys(this.nodes).map((id) => this.renderNode(id))}
           </svg>
           {this.state.editingConnection && (
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
