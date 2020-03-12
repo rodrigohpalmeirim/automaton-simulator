@@ -16,7 +16,6 @@ export default class App extends Component {
     this.dragNode = this.dragNode.bind(this);
     this.dragArrow = this.dragArrow.bind(this);
     this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
-    this.nodeMouseUpHandler = this.nodeMouseUpHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
     this.changeConnectionAttributes = this.changeConnectionAttributes.bind(this);
@@ -28,23 +27,7 @@ export default class App extends Component {
 
     this.nodes = {
       q0: {
-        x: 50,
-        y: 50,
-        connections: {
-          /* "a": {
-            node: "q1",
-            replaceChar: "b",
-            move: "right"
-          } */
-        }
-      },
-      q1: {
         x: 200,
-        y: 100,
-        connections: {}
-      },
-      q2: {
-        x: 100,
         y: 200,
         connections: {}
       }
@@ -94,7 +77,6 @@ export default class App extends Component {
     return (
       <circle id={id} key={id} cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0"
         onMouseDown={this.nodeMouseDownHandler}
-        onMouseUp={this.nodeMouseUpHandler}
       />
     );
   }
@@ -142,20 +124,17 @@ export default class App extends Component {
     }
   }
 
-  nodeMouseUpHandler(event) {
-    if (this.state.draggingArrow) {
-      const endNodeId = event.target.getAttribute("id");
-      this.nodes[this.selectedNodeId].connections[""] = {
-        node: endNodeId,
-        replaceChar: "",
-        move: ""
-      }
-      this.arrowCenter = {
-        x: (this.nodes[this.selectedNodeId].x + this.nodes[endNodeId].x) / 2,
-        y: (this.nodes[this.selectedNodeId].y + this.nodes[endNodeId].y) / 2
-      }
-      this.setState({ editingConnection: true });
+  createConnection(endNodeId) {
+    this.nodes[this.selectedNodeId].connections[""] = {
+      node: endNodeId,
+      replaceChar: "",
+      move: ""
     }
+    this.arrowCenter = {
+      x: (this.nodes[this.selectedNodeId].x + this.nodes[endNodeId].x) / 2,
+      y: (this.nodes[this.selectedNodeId].y + this.nodes[endNodeId].y) / 2
+    }
+    this.setState({ editingConnection: true });
   }
 
   changeConnectionAttributes(node, char, newChar, replaceChar, move) {
@@ -191,9 +170,28 @@ export default class App extends Component {
     }
   }
 
-  mouseUpHandler() {
+  createNode(x, y) {
+    var newId = "q0";
+    for (const id in this.nodes) {
+      if (id.substr(1) >= newId.substr(1)) {
+        newId = "q" + (Number(id.substr(1)) + 1);
+      }
+    }
+    this.nodes[newId] = { x: x, y: y, connections: {} }
+    return newId;
+  }
+
+  mouseUpHandler(event) {
     if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
-    if (this.state.draggingArrow) document.removeEventListener("mousemove", this.dragArrow);
+    if (this.state.draggingArrow) {
+      document.removeEventListener("mousemove", this.dragArrow);
+      if (event.target.tagName === "circle") {
+        this.createConnection(event.target.getAttribute("id"));
+      } else {
+        const newId = this.createNode(event.pageX, event.pageY);
+        this.createConnection(newId);
+      }
+    }
     this.setState({ draggingNode: false, draggingArrow: false });
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
   }
