@@ -76,9 +76,12 @@ export default class App extends Component {
 
   renderNode(id) {
     return (
-      <circle id={id} key={id} cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0"
-        onMouseDown={this.nodeMouseDownHandler}
-      />
+      <g key={id} id={id} type="node" onMouseDown={this.nodeMouseDownHandler}>
+        <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0" />
+        {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
+          <text x={this.nodes[id].x - 18} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
+        }
+      </g>
     );
   }
 
@@ -156,7 +159,7 @@ export default class App extends Component {
   }
 
   nodeMouseDownHandler(event) {
-    this.selectedNodeId = event.target.getAttribute("id");
+    this.selectedNodeId = event.target.parentElement.getAttribute("id");
     this.offset = {
       x: event.pageX - this.nodes[this.selectedNodeId].x,
       y: event.pageY - this.nodes[this.selectedNodeId].y
@@ -188,8 +191,8 @@ export default class App extends Component {
     if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
     if (this.state.draggingArrow) {
       document.removeEventListener("mousemove", this.dragArrow);
-      if (event.target.tagName === "circle") {
-        this.createConnection(event.target.getAttribute("id"));
+      if (event.target.parentElement.getAttribute("type") === "node") {
+        this.createConnection(event.target.parentElement.getAttribute("id"));
       } else {
         const newId = this.createNode(event.pageX, event.pageY);
         this.tempNode = newId;
