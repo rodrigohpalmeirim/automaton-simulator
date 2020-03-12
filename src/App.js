@@ -24,6 +24,7 @@ export default class App extends Component {
 
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.selectedConnectionChar = "";
+    this.tempNode = "";
 
     this.nodes = {
       q0: {
@@ -150,6 +151,8 @@ export default class App extends Component {
     }
     this.setState({ editingConnection: false });
     this.selectedConnectionChar = "";
+    delete this.nodes[this.tempNode];
+    this.forceUpdate();
   }
 
   nodeMouseDownHandler(event) {
@@ -189,6 +192,7 @@ export default class App extends Component {
         this.createConnection(event.target.getAttribute("id"));
       } else {
         const newId = this.createNode(event.pageX, event.pageY);
+        this.tempNode = newId;
         this.createConnection(newId);
       }
     }
