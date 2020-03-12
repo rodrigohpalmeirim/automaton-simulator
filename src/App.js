@@ -76,7 +76,7 @@ export default class App extends Component {
 
   renderNode(id) {
     return (
-      <g key={id} id={id} type="node" onMouseDown={this.nodeMouseDownHandler}>
+      <g key={id} id={id} type="node">
         <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0" />
         {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
           <text x={this.nodes[id].x - 18} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
@@ -146,6 +146,7 @@ export default class App extends Component {
       move: move
     }
     this.selectedConnectionChar = "";
+    this.tempNode = "";
   }
 
   cancelConnection() {
@@ -159,17 +160,19 @@ export default class App extends Component {
   }
 
   nodeMouseDownHandler(event) {
-    this.selectedNodeId = event.target.parentElement.getAttribute("id");
-    this.offset = {
-      x: event.pageX - this.nodes[this.selectedNodeId].x,
-      y: event.pageY - this.nodes[this.selectedNodeId].y
-    };
-    if (!this.state.shift) {
-      this.setState({ draggingNode: true });
-      document.addEventListener("mousemove", this.dragNode);
-    } else {
-      this.setState({ draggingArrow: true });
-      document.addEventListener("mousemove", this.dragArrow);
+    if (event.target.parentElement.getAttribute("id") !== this.tempNode) {
+      this.selectedNodeId = event.target.parentElement.getAttribute("id");
+      this.offset = {
+        x: event.pageX - this.nodes[this.selectedNodeId].x,
+        y: event.pageY - this.nodes[this.selectedNodeId].y
+      };
+      if (!this.state.shift) {
+        this.setState({ draggingNode: true });
+        document.addEventListener("mousemove", this.dragNode);
+      } else {
+        this.setState({ draggingArrow: true });
+        document.addEventListener("mousemove", this.dragArrow);
+      }
     }
   }
 
@@ -185,6 +188,10 @@ export default class App extends Component {
         this.cancelConnection();
       }
     }
+    if (event.target.parentElement.getAttribute("type") === "node") {
+      this.nodeMouseDownHandler(event);
+    }
+    this.tempNode = "";
   }
 
   mouseUpHandler(event) {
