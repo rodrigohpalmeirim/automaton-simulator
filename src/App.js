@@ -18,14 +18,14 @@ export default class App extends Component {
     this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
-    this.changeConnectionAttributes = this.changeConnectionAttributes.bind(this);
+    this.editConnection = this.editConnection.bind(this);
+    this.applyConnectionChanges = this.applyConnectionChanges.bind(this);
     this.cancelConnection = this.cancelConnection.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.contextMenuHandler = this.contextMenuHandler.bind(this);
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
-    this.selectedConnectionChar = "";
     this.tempNode = "";
-    this.contextMenuPos = { x: 0, y: 0 }
+    this.contextMenu = { x: 0, y: 0, options: [] }
 
     this.nodes = {
       q0: {
@@ -36,13 +36,16 @@ export default class App extends Component {
     }
   }
 
-  renderArrow(key, node, char, x1, y1, x2, y2, endDistance = 0, text = "") {
+  renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, text = "") {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
     if (d > 0) {
       return (
-        <g key={key}>
+        <g key={key} onMouseDown={() => {
+          this.selectedNodeId = nodeId;
+          this.selectedConnectionChar = char;
+        }}>
           {(d > 35) && (<line
             x1={x1 + dx * 30 / d}  // TODO remove hardcoded chars
             y1={y1 + dy * 30 / d}
@@ -60,12 +63,7 @@ export default class App extends Component {
             fill="#88C0D0"
           />
           {text && (
-            <g onDoubleClick={() => {
-              this.setState({ editingConnection: true });
-              this.selectedConnectionChar = char;
-              this.selectedNodeId = node;
-              this.arrowCenter = { x: (x1 + x2) / 2, y: (y1 + y2) / 2 }
-            }}>
+            <g onDoubleClick={() => { this.editConnection(nodeId, char) }}>
               <rect x={(x1 + x2) / 2 - 27} y={(y1 + y2) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
               <text x={(x1 + x2) / 2 - 23} y={(y1 + y2) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440">{text}</text>
             </g>
@@ -77,7 +75,10 @@ export default class App extends Component {
 
   renderNode(id) {
     return (
-      <g key={id} id={id} type="node">
+      <g key={id} id={id} type="node" onMouseDown={() => {
+        this.selectedNodeId = id;
+        this.selectedConnectionChar = "";
+      }}>
         <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0" />
         {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
           <text x={this.nodes[id].x - 18} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
@@ -119,29 +120,51 @@ export default class App extends Component {
     return newId;
   }
 
+  removeNode(nodeId) {
+    for (const node in this.nodes) {
+      for (const char in this.nodes[node].connections) {
+        if (this.nodes[node].connections[char].node === nodeId) {
+          this.removeConnection(node, char);
+        }
+      }
+    }
+    delete this.nodes[nodeId];
+  }
+
   createConnection(endNodeId) {
     this.nodes[this.selectedNodeId].connections[""] = {
       node: endNodeId,
       replaceChar: "",
       move: ""
     }
-    this.arrowCenter = {
-      x: (this.nodes[this.selectedNodeId].x + this.nodes[endNodeId].x) / 2,
-      y: (this.nodes[this.selectedNodeId].y + this.nodes[endNodeId].y) / 2
-    }
-    this.setState({ editingConnection: true });
+    this.editConnection(this.selectedNodeId, "");
   }
 
-  changeConnectionAttributes(node, char, newChar, replaceChar, move) {
-    const endNode = this.nodes[node].connections[char].node;
-    delete this.nodes[node].connections[char];
-    this.nodes[node].connections[newChar] = {
-      node: endNode,
-      replaceChar: replaceChar,
-      move: move
+  editConnection(nodeId, char) {
+    this.arrowCenter = {
+      x: (this.nodes[nodeId].x + this.nodes[this.nodes[nodeId].connections[char].node].x) / 2,
+      y: (this.nodes[nodeId].y + this.nodes[this.nodes[nodeId].connections[char].node].y) / 2
     }
-    this.selectedConnectionChar = "";
-    this.tempNode = "";
+    this.setState({ editingConnection: true });
+    this.editingConnection = { node: this.selectedNodeId, char: char }
+  }
+
+  applyConnectionChanges() {
+    const newChar = document.getElementsByClassName("connection-input")[0].value;
+    const replaceChar = document.getElementsByClassName("connection-input")[1].value;
+    const move = document.getElementsByClassName("connection-input")[2].value;
+    if (newChar && replaceChar && move) {
+      const endNode = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].node;
+      delete this.nodes[this.editingConnection.node].connections[this.editingConnection.char];
+      this.nodes[this.editingConnection.node].connections[newChar] = {
+        node: endNode,
+        replaceChar: replaceChar,
+        move: move
+      }
+      this.tempNode = "";
+      return true;
+    }
+    return false;
   }
 
   cancelConnection() {
@@ -149,9 +172,12 @@ export default class App extends Component {
       delete this.nodes[id].connections[""];
     }
     this.setState({ editingConnection: false });
-    this.selectedConnectionChar = "";
     delete this.nodes[this.tempNode];
     this.forceUpdate();
+  }
+
+  removeConnection(nodeId, char) {
+    delete this.nodes[nodeId].connections[char];
   }
 
   nodeMouseDownHandler(event) {
@@ -172,13 +198,9 @@ export default class App extends Component {
   }
 
   mouseDownHandler(event) {
-    this.setState({contextMenu: false});
+    this.setState({ contextMenu: false });
     if (this.state.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
-      const newChar = document.getElementsByClassName("connection-input")[0].value;
-      const replaceChar = document.getElementsByClassName("connection-input")[1].value;
-      const move = document.getElementsByClassName("connection-input")[2].value;
-      if (newChar && replaceChar && move) {
-        this.changeConnectionAttributes(this.selectedNodeId, this.selectedConnectionChar, newChar, replaceChar, move)
+      if (this.applyConnectionChanges()) {
         this.setState({ editingConnection: false });
       } else {
         this.cancelConnection();
@@ -188,7 +210,7 @@ export default class App extends Component {
       if (event.target.parentElement.getAttribute("type") === "node") {
         this.nodeMouseDownHandler(event);
       }
-    } catch (e) {}
+    } catch (e) { }
     this.tempNode = "";
   }
 
@@ -210,11 +232,7 @@ export default class App extends Component {
 
   keyDownHandler(event) {
     if (this.state.editingConnection) {
-      const newChar = document.getElementsByClassName("connection-input")[0].value;
-      const replaceChar = document.getElementsByClassName("connection-input")[1].value;
-      const move = document.getElementsByClassName("connection-input")[2].value;
-      if (event.key === "Enter" && newChar && replaceChar && move) {
-        this.changeConnectionAttributes(this.selectedNodeId, this.selectedConnectionChar, newChar, replaceChar, move)
+      if (event.key === "Enter" && this.applyConnectionChanges()) {
         this.setState({ editingConnection: false });
       } else if (event.key === "Escape") {
         this.cancelConnection();
@@ -224,10 +242,24 @@ export default class App extends Component {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    this.setState({contextMenu: true})
-    this.contextMenuPos = {
+    this.setState({ contextMenu: true })
+    this.contextMenu = {
       x: event.pageX,
       y: event.pageY
+    }
+    if (event.target.tagName === "svg") { // Background
+      this.contextMenu.options = [
+        <p key="0" onClick={() => { this.createNode(this.contextMenu.x, this.contextMenu.y) }}>Add node</p>
+      ];
+    } else if (this.selectedConnectionChar) { // Connection
+      this.contextMenu.options = [
+        <p key="0" onClick={() => { this.removeConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Remove connection</p>,
+        <p key="1" onClick={() => { this.editConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Edit connection</p>
+      ];
+    } else { // Node
+      this.contextMenu.options = [
+        <p key="0" onClick={() => { this.removeNode(this.selectedNodeId) }}>Remove node</p>
+      ];
     }
   }
 
@@ -260,8 +292,8 @@ export default class App extends Component {
             </form>
           )}
           {this.state.contextMenu && (
-            <div style={{ left: this.contextMenuPos.x, top: this.contextMenuPos.y }} id="context-menu" onClick={() => this.setState({contextMenu: false})}>
-              <p onClick={() => {this.createNode(this.contextMenuPos.x, this.contextMenuPos.y)}}>Add node</p>
+            <div style={{ left: this.contextMenu.x, top: this.contextMenu.y }} id="context-menu" onClick={() => this.setState({ contextMenu: false })}>
+              {this.contextMenu.options.map((option) => option)}
             </div>
           )}
         </header>
