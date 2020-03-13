@@ -256,7 +256,7 @@ export default class App extends Component {
           </svg>
           {this.state.editingConnection && (
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
-              <input className="connection-input" type="text" name="char" maxLength="1" autoFocus /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" />, <input className="connection-input" type="text" name="move" maxLength="1" />
+              <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => event.target.nextElementSibling.focus()} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => event.target.nextElementSibling.focus()} />, <input className="connection-input" type="text" name="move" maxLength="1" />
             </form>
           )}
           {this.state.contextMenu && (
