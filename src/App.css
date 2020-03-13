@@ -39,3 +39,21 @@
   text-align: center;
   border-radius: 5px;
 }
+
+#context-menu {
+  position: absolute;
+  background-color: #3B4252;
+  font-size: 15px;
+  border-radius: 5px;
+}
+
+#context-menu p {
+  margin: 0px;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+}
+#context-menu p:hover {
+  background-color: #4C566A;
+}

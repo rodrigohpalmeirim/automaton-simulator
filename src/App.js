@@ -10,7 +10,8 @@ export default class App extends Component {
       shift: false,
       draggingNode: false,
       draggingArrow: false,
-      editingConnection: false
+      editingConnection: false,
+      contextMenu: false
     }
 
     this.dragNode = this.dragNode.bind(this);
@@ -21,10 +22,11 @@ export default class App extends Component {
     this.changeConnectionAttributes = this.changeConnectionAttributes.bind(this);
     this.cancelConnection = this.cancelConnection.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
-
+    this.contextMenuHandler = this.contextMenuHandler.bind(this);
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.selectedConnectionChar = "";
     this.tempNode = "";
+    this.contextMenuPos = { x: 0, y: 0 }
 
     this.nodes = {
       q0: {
@@ -86,14 +88,15 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    document.addEventListener("keydown", (event) => {
+    const canvas = document.querySelector("svg");
+    canvas.addEventListener("keydown", (event) => {
       if (event.key === "Shift") this.setState({ shift: true });
     });
-    document.addEventListener("keyup", (event) => {
+    canvas.addEventListener("keyup", (event) => {
       if (event.key === "Shift") this.setState({ shift: false });
     });
-    document.addEventListener("mousedown", this.mouseDownHandler);
-    document.addEventListener("keydown", this.keyDownHandler);
+    canvas.addEventListener("mousedown", this.mouseDownHandler);
+    canvas.addEventListener("keydown", this.keyDownHandler);
   }
 
   dragNode(event) {
@@ -121,6 +124,7 @@ export default class App extends Component {
       }
     }
     this.nodes[newId] = { x: x, y: y, connections: {} }
+    this.forceUpdate();
     return newId;
   }
 
@@ -160,7 +164,7 @@ export default class App extends Component {
   }
 
   nodeMouseDownHandler(event) {
-    if (event.target.parentElement.getAttribute("id") !== this.tempNode) {
+    if (event.button === 0 && event.target.parentElement.getAttribute("id") !== this.tempNode) {
       this.selectedNodeId = event.target.parentElement.getAttribute("id");
       this.offset = {
         x: event.pageX - this.nodes[this.selectedNodeId].x,
@@ -177,6 +181,7 @@ export default class App extends Component {
   }
 
   mouseDownHandler(event) {
+    this.setState({contextMenu: false});
     if (this.state.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
       const newChar = document.getElementsByClassName("connection-input")[0].value;
       const replaceChar = document.getElementsByClassName("connection-input")[1].value;
@@ -188,10 +193,11 @@ export default class App extends Component {
         this.cancelConnection();
       }
     }
-    if (event.target.parentElement.getAttribute("type") === "node") {
-      this.nodeMouseDownHandler(event);
-    }
-    this.tempNode = "";
+    try {
+      if (event.target.parentElement.getAttribute("type") === "node") {
+        this.nodeMouseDownHandler(event);
+      }
+    } catch (e) {}
   }
 
   mouseUpHandler(event) {
@@ -224,11 +230,20 @@ export default class App extends Component {
     }
   }
 
+  contextMenuHandler(event) {
+    event.preventDefault();
+    this.setState({contextMenu: true})
+    this.contextMenuPos = {
+      x: event.pageX,
+      y: event.pageY
+    }
+  }
+
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseUp={this.mouseUpHandler}>
+          <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseUp={this.mouseUpHandler} onContextMenu={this.contextMenuHandler}>
             {Object.keys(this.nodes).map((id) => {
               return Object.keys(this.nodes[id].connections).map((char, key) => {
                 return this.renderArrow(
@@ -251,6 +266,11 @@ export default class App extends Component {
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
               <input className="connection-input" type="text" name="char" maxLength="1" autoFocus /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" />, <input className="connection-input" type="text" name="move" maxLength="1" />
             </form>
+          )}
+          {this.state.contextMenu && (
+            <div style={{ left: this.contextMenuPos.x, top: this.contextMenuPos.y }} id="context-menu" onClick={() => this.setState({contextMenu: false})}>
+              <p onClick={() => {this.createNode(this.contextMenuPos.x, this.contextMenuPos.y)}}>Add node</p>
+            </div>
           )}
         </header>
       </div>
