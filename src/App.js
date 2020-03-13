@@ -7,7 +7,6 @@ export default class App extends Component {
     super(props);
 
     this.state = {
-      shift: false,
       draggingNode: false,
       draggingArrow: false,
       editingConnection: false,
@@ -88,15 +87,8 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    const canvas = document.querySelector("svg");
-    canvas.addEventListener("keydown", (event) => {
-      if (event.key === "Shift") this.setState({ shift: true });
-    });
-    canvas.addEventListener("keyup", (event) => {
-      if (event.key === "Shift") this.setState({ shift: false });
-    });
-    canvas.addEventListener("mousedown", this.mouseDownHandler);
-    canvas.addEventListener("keydown", this.keyDownHandler);
+    document.querySelector("svg").addEventListener("mousedown", this.mouseDownHandler);
+    document.addEventListener("keydown", this.keyDownHandler);
   }
 
   dragNode(event) {
@@ -170,7 +162,7 @@ export default class App extends Component {
         x: event.pageX - this.nodes[this.selectedNodeId].x,
         y: event.pageY - this.nodes[this.selectedNodeId].y
       };
-      if (!this.state.shift) {
+      if (!event.shiftKey) {
         this.setState({ draggingNode: true });
         document.addEventListener("mousemove", this.dragNode);
       } else {
