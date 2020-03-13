@@ -87,7 +87,6 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    document.querySelector("svg").addEventListener("mousedown", this.mouseDownHandler);
     document.addEventListener("keydown", this.keyDownHandler);
   }
 
@@ -190,6 +189,7 @@ export default class App extends Component {
         this.nodeMouseDownHandler(event);
       }
     } catch (e) {}
+    this.tempNode = "";
   }
 
   mouseUpHandler(event) {
@@ -235,7 +235,7 @@ export default class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseUp={this.mouseUpHandler} onContextMenu={this.contextMenuHandler}>
+          <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseDown={this.mouseDownHandler} onMouseUp={this.mouseUpHandler} onContextMenu={this.contextMenuHandler}>
             {Object.keys(this.nodes).map((id) => {
               return Object.keys(this.nodes[id].connections).map((char, key) => {
                 return this.renderArrow(
