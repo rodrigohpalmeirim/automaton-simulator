@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: #D8DEE9;
 }
 
 #connection-box {
@@ -34,7 +34,7 @@
   background-color: #4C566A;
   width: 15px;
   height: 15px;
-  color: white;
+  color: #D8DEE9;
   font-size: medium;
   text-align: center;
   border-radius: 5px;
@@ -53,7 +53,9 @@
   border-radius: 5px;
   cursor: pointer;
   text-align: left;
+  color: #D8DEE9;
 }
 #context-menu p:hover {
   background-color: #4C566A;
+  color: #ECEFF4;
 }
