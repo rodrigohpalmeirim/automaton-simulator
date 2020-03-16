@@ -15,6 +15,7 @@ export default class App extends Component {
 
     this.dragNode = this.dragNode.bind(this);
     this.dragArrow = this.dragArrow.bind(this);
+    this.dragLabel = this.dragLabel.bind(this);
     this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
@@ -40,32 +41,59 @@ export default class App extends Component {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
+    var curve = 0;
+    if (nodeId && char) {
+      curve = this.nodes[nodeId].connections[char].arrowCurve;
+    }
+    const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
+    const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
+    const dcl1x = x1 - cpx;
+    const dcl1y = y1 - cpy;
+    const dcl1 = Math.sqrt(dcl1x ** 2 + dcl1y ** 2);
+    const dcl2x = x2 - cpx;
+    const dcl2y = y2 - cpy;
+    const dcl2 = Math.sqrt(dcl2x ** 2 + dcl2y ** 2);
+    const sx = x1 - dcl1x * 30 / dcl1;
+    const sy = y1 - dcl1y * 30 / dcl1;
+    const ex = x2 - dcl2x * (endDistance + 14) / dcl2;
+    const ey = y2 - dcl2y * (endDistance + 14) / dcl2;
+
+    if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
+      this.arrowCenter = {
+        x: ((sx + ex) / 2 + cpx) / 2,
+        y: ((sy + ey) / 2 + cpy) / 2
+      }
+    }
+
     if (d > 0) {
       return (
         <g key={key} onMouseDown={() => {
           this.selectedNodeId = nodeId;
           this.selectedConnectionChar = char;
         }}>
-          {(d > 35) && (<line
+          {/* (d > 35) && (<line
             x1={x1 + dx * 30 / d}  // TODO remove hardcoded chars
             y1={y1 + dy * 30 / d}
             x2={x2 - dx * (endDistance + 14) / d}
             y2={y2 - dy * (endDistance + 14) / d}
             style={{ stroke: "#88C0D0", strokeWidth: 5 }}
-          />)
-          }
+          />) */}
+          <path d={"M " + sx + " " + sy + " Q " + cpx + " " + cpy + " " + ex + " " + ey} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
           <polygon
             points={
-              (x2 - dx * endDistance / d) + "," + (y2 - dy * endDistance / d) + " " +
-              (x2 - dx * (endDistance + 15) / d - 10 * dy / d) + "," + (y2 - dy * (endDistance + 15) / d + 10 * dx / d) + " " +
-              (x2 - dx * (endDistance + 15) / d + 10 * dy / d) + "," + (y2 - dy * (endDistance + 15) / d - 10 * dx / d)
+              (x2 - dcl2x * endDistance / dcl2) + "," + (y2 - dcl2y * endDistance / dcl2) + " " +
+              (x2 - dcl2x * (endDistance + 15) / dcl2 - 10 * dcl2y / dcl2) + "," + (y2 - dcl2y * (endDistance + 15) / dcl2 + 10 * dcl2x / dcl2) + " " +
+              (x2 - dcl2x * (endDistance + 15) / dcl2 + 10 * dcl2y / dcl2) + "," + (y2 - dcl2y * (endDistance + 15) / dcl2 - 10 * dcl2x / dcl2)
             }
             fill="#88C0D0"
           />
           {text && (
-            <g onDoubleClick={() => { this.editConnection(nodeId, char) }}>
-              <rect x={(x1 + x2) / 2 - 27} y={(y1 + y2) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-              <text x={(x1 + x2) / 2 - 23} y={(y1 + y2) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440">{text}</text>
+            <g
+              onDoubleClick={() => { this.editConnection(nodeId, char) }}
+              onMouseDown={() => { document.addEventListener("mousemove", this.dragLabel) }}
+            >
+              <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
+              <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440">{text}</text>
             </g>
           )}
         </g>
@@ -108,6 +136,17 @@ export default class App extends Component {
     this.forceUpdate();
   }
 
+  dragLabel(event) {
+    const startNode = this.nodes[this.selectedNodeId];
+    const endNode = this.nodes[this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].node]
+    const x1 = startNode.x;
+    const y1 = startNode.y;
+    const x2 = endNode.x;
+    const y2 = endNode.y;
+    this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+    this.forceUpdate();
+  }
+
   createNode(x, y) {
     var newId = "q0";
     for (const id in this.nodes) {
@@ -135,18 +174,15 @@ export default class App extends Component {
     this.nodes[this.selectedNodeId].connections[""] = {
       node: endNodeId,
       replaceChar: "",
-      move: ""
+      move: "",
+      arrowCurve: 0,
     }
     this.editConnection(this.selectedNodeId, "");
   }
 
   editConnection(nodeId, char) {
-    this.arrowCenter = {
-      x: (this.nodes[nodeId].x + this.nodes[this.nodes[nodeId].connections[char].node].x) / 2,
-      y: (this.nodes[nodeId].y + this.nodes[this.nodes[nodeId].connections[char].node].y) / 2
-    }
     this.setState({ editingConnection: true });
-    this.editingConnection = { node: this.selectedNodeId, char: char }
+    this.editingConnection = { node: nodeId, char: char }
   }
 
   applyConnectionChanges() {
@@ -159,7 +195,8 @@ export default class App extends Component {
       this.nodes[this.editingConnection.node].connections[newChar] = {
         node: endNode,
         replaceChar: replaceChar,
-        move: move
+        move: move,
+        arrowCurve: 0,
       }
       this.tempNode = "";
       return true;
@@ -215,6 +252,7 @@ export default class App extends Component {
   }
 
   mouseUpHandler(event) {
+    document.removeEventListener("mousemove", this.dragLabel);
     if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
     if (this.state.draggingArrow) {
       document.removeEventListener("mousemove", this.dragArrow);
@@ -253,8 +291,8 @@ export default class App extends Component {
       ];
     } else if (this.selectedConnectionChar) { // Connection
       this.contextMenu.options = [
-        <p key="0" onClick={() => { this.removeConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Remove connection</p>,
-        <p key="1" onClick={() => { this.editConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Edit connection</p>
+        <p key="0" onClick={() => { this.editConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Edit connection</p>,
+        <p key="1" onClick={() => { this.removeConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Remove connection</p>
       ];
     } else { // Node
       this.contextMenu.options = [
