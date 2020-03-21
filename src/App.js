@@ -41,10 +41,7 @@ export default class App extends Component {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const d = Math.sqrt(dx ** 2 + dy ** 2);
-    var curve = 0;
-    if (nodeId && char) {
-      curve = this.nodes[nodeId].connections[char].arrowCurve;
-    }
+    const curve = nodeId ? this.nodes[nodeId].connections[char].arrowCurve : 0;
     const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
     const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
     const dcl1x = x1 - cpx;
@@ -71,13 +68,6 @@ export default class App extends Component {
           this.selectedNodeId = nodeId;
           this.selectedConnectionChar = char;
         }}>
-          {/* (d > 35) && (<line
-            x1={x1 + dx * 30 / d}  // TODO remove hardcoded chars
-            y1={y1 + dy * 30 / d}
-            x2={x2 - dx * (endDistance + 14) / d}
-            y2={y2 - dy * (endDistance + 14) / d}
-            style={{ stroke: "#88C0D0", strokeWidth: 5 }}
-          />) */}
           <path d={"M " + sx + " " + sy + " Q " + cpx + " " + cpy + " " + ex + " " + ey} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
           <polygon
             points={
@@ -90,7 +80,7 @@ export default class App extends Component {
           {text && (
             <g
               onDoubleClick={() => { this.editConnection(nodeId, char) }}
-              onMouseDown={() => { document.addEventListener("mousemove", this.dragLabel) }}
+              onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
             >
               <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
               <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440">{text}</text>
@@ -177,6 +167,23 @@ export default class App extends Component {
       move: "",
       arrowCurve: 0,
     }
+    for (const char in this.nodes[endNodeId].connections) {
+      if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId) {
+        if (Math.abs(this.nodes[endNodeId].connections[char].arrowCurve) < 25) {
+          const d = Math.abs(25 - this.nodes[endNodeId].connections[char].arrowCurve);
+          for (const char2 in this.nodes[endNodeId].connections) {
+            if (this.nodes[endNodeId].connections[char2].node === this.selectedNodeId && this.nodes[endNodeId].connections[char2].arrowCurve > -25) {
+              this.nodes[endNodeId].connections[char2].arrowCurve += d;
+            }
+          }
+        }
+        this.nodes[this.selectedNodeId].connections[""].arrowCurve = 25;
+      }
+    }
+    for (const char in this.nodes[this.selectedNodeId].connections) {
+      if (char !== "" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
+        this.nodes[this.selectedNodeId].connections[char].arrowCurve += 50;
+    }
     this.editConnection(this.selectedNodeId, "");
   }
 
@@ -191,12 +198,13 @@ export default class App extends Component {
     const move = document.getElementsByClassName("connection-input")[2].value;
     if (newChar && replaceChar && move) {
       const endNode = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].node;
+      const arrowCurve = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].arrowCurve;
       delete this.nodes[this.editingConnection.node].connections[this.editingConnection.char];
       this.nodes[this.editingConnection.node].connections[newChar] = {
         node: endNode,
         replaceChar: replaceChar,
         move: move,
-        arrowCurve: 0,
+        arrowCurve: arrowCurve,
       }
       this.tempNode = "";
       return true;
