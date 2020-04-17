@@ -59,3 +59,19 @@
   background-color: #4C566A;
   color: #ECEFF4;
 }
+
+#tape {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#tape input {
+  font-family: mono;
+  color: white;
+  text-align: center;
+  border: none;
+  padding: 0;
+  outline: none;
+}

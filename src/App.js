@@ -10,13 +10,17 @@ export default class App extends Component {
       draggingNode: false,
       draggingArrow: false,
       editingConnection: false,
-      contextMenu: false
+      contextMenu: false,
+      tapeHeight: 100,
     }
 
     this.dragNode = this.dragNode.bind(this);
     this.dragArrow = this.dragArrow.bind(this);
     this.dragLabel = this.dragLabel.bind(this);
+    this.dragTape = this.dragTape.bind(this);
+    this.updateTape = this.updateTape.bind(this);
     this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
+    this.tapeMouseDownHandler = this.tapeMouseDownHandler.bind(this);
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
     this.editConnection = this.editConnection.bind(this);
@@ -27,6 +31,7 @@ export default class App extends Component {
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.tempNode = "";
     this.contextMenu = { x: 0, y: 0, options: [] }
+    this.tapePos = 0;
 
     this.nodes = {
       q0: {
@@ -35,6 +40,13 @@ export default class App extends Component {
         connections: {}
       }
     }
+
+    this.chars = {}
+    this.firstKey = 0;
+    for (var i = 0; i < window.innerWidth / this.state.tapeHeight; i++) {
+      this.chars[i] = "";
+    }
+    this.lastKey = i - 1;
   }
 
   renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, text = "") {
@@ -107,6 +119,10 @@ export default class App extends Component {
 
   componentDidMount() {
     document.addEventListener("keydown", this.keyDownHandler);
+    window.addEventListener("resize", this.updateTape);
+    document.addEventListener("mouseup", () => {
+      document.removeEventListener("mousemove", this.dragTape)
+    });
   }
 
   dragNode(event) {
@@ -135,6 +151,23 @@ export default class App extends Component {
     const y2 = endNode.y;
     this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
     this.forceUpdate();
+  }
+
+  updateTape() {
+    while (-this.tapePos < this.state.tapeHeight * this.firstKey) {
+      this.firstKey--;
+      this.chars[this.firstKey] = "";
+    }
+    while (window.innerWidth > this.state.tapeHeight * (this.lastKey + 1) + this.tapePos) {
+      this.lastKey++;
+      this.chars[this.lastKey] = "";
+    }
+    this.forceUpdate();
+  }
+
+  dragTape(event) {
+    this.tapePos = event.pageX - this.tapeClickDelta;
+    this.updateTape();
   }
 
   createNode(x, y) {
@@ -242,6 +275,13 @@ export default class App extends Component {
     }
   }
 
+  tapeMouseDownHandler(event) {
+    if (event.button === 0) {
+      this.tapeClickDelta = event.pageX - this.tapePos;
+      document.addEventListener("mousemove", this.dragTape);
+    }
+  }
+
   mouseDownHandler(event) {
     this.setState({ contextMenu: false });
     if (this.state.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
@@ -332,6 +372,24 @@ export default class App extends Component {
             {this.state.draggingArrow && this.renderArrow("user", "", "", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
             {Object.keys(this.nodes).map((id) => this.renderNode(id))}
           </svg>
+          <div id="tape" style={{ height: this.state.tapeHeight }} onMouseDown={this.tapeMouseDownHandler}>
+            {
+              Object.keys(this.chars).map((id) => {
+                if (-this.tapePos < this.state.tapeHeight * (Number(id) + 1) && window.innerWidth > this.state.tapeHeight * (Number(id)) + this.tapePos) {
+                  return (<input key={id} style={{
+                    height: this.state.tapeHeight,
+                    width: this.state.tapeHeight,
+                    backgroundColor: id % 2 ? "#4C566A" : "#3B4252",
+                    position: "absolute",
+                    bottom: 0,
+                    left: id * this.state.tapeHeight + this.tapePos,
+                    fontSize: this.state.tapeHeight/2
+                  }} maxLength="1" onInput={(event) => {this.chars[id] = event.target.value}} defaultValue={this.chars[id]} />
+                  )
+                }
+              })
+            }
+          </div>
           {this.state.editingConnection && (
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
               <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => event.target.nextElementSibling.focus()} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => event.target.nextElementSibling.focus()} />, <input className="connection-input" type="text" name="move" maxLength="1" />
