@@ -75,3 +75,9 @@
   padding: 0;
   outline: none;
 }
+
+#cursor {
+  position: absolute;
+  border: 10px solid #88C0D0;
+  pointer-events: none;
+}

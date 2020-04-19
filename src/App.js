@@ -6,14 +6,6 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      draggingNode: false,
-      draggingArrow: false,
-      editingConnection: false,
-      contextMenu: false,
-      tapeHeight: 100,
-    }
-
     this.dragNode = this.dragNode.bind(this);
     this.dragArrow = this.dragArrow.bind(this);
     this.dragLabel = this.dragLabel.bind(this);
@@ -32,6 +24,17 @@ export default class App extends Component {
     this.tempNode = "";
     this.contextMenu = { x: 0, y: 0, options: [] }
     this.tapePos = 0;
+    this.startCharId = 0;
+
+    this.state = {
+      draggingNode: false,
+      draggingArrow: false,
+      editingConnection: false,
+      contextMenu: false,
+      tapeHeight: 100,
+      focusedCharId: this.startCharId,
+      running: false,
+    }
 
     this.nodes = {
       q0: {
@@ -383,12 +386,18 @@ export default class App extends Component {
                     position: "absolute",
                     bottom: 0,
                     left: id * this.state.tapeHeight + this.tapePos,
-                    fontSize: this.state.tapeHeight/2
-                  }} maxLength="1" onInput={(event) => {this.chars[id] = event.target.value}} defaultValue={this.chars[id]} />
+                    fontSize: this.state.tapeHeight / 2
+                  }} maxLength="1" onInput={(event) => { this.chars[id] = event.target.value }} defaultValue={this.chars[id]} />
                   )
                 }
               })
             }
+            <div id="cursor" style={{
+              height: this.state.tapeHeight - 20,
+              width: this.state.tapeHeight - 20,
+              left: this.state.focusedCharId * this.state.tapeHeight + this.tapePos,
+              transition: this.state.running ? ".5s" : "0s",
+            }} />
           </div>
           {this.state.editingConnection && (
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
