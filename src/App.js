@@ -34,6 +34,7 @@ export default class App extends Component {
       tapeHeight: 100,
       focusedCharId: this.startCharId,
       running: false,
+      state: "q0",
     }
 
     this.nodes = {
@@ -352,6 +353,35 @@ export default class App extends Component {
     }
   }
 
+  run() {
+    this.setState({ running: true });
+    this.interval = setInterval(() => {
+      for (const char in this.nodes[this.state.state].connections) {
+        if (char === this.chars[this.state.focusedCharId]) {
+          const connection = this.nodes[this.state.state].connections[char];
+          this.chars[this.state.focusedCharId] = connection.replaceChar;
+          try {
+            document.querySelector("#tape input[num='"+this.state.focusedCharId+"']").value = connection.replaceChar;
+          } catch (e) {}
+          switch (connection.move) {
+            case "L":
+              this.setState({focusedCharId: this.state.focusedCharId-1});
+              break;
+            case "R":
+              this.setState({focusedCharId: this.state.focusedCharId+1});
+              break;
+          }
+          this.setState({state: connection.node});
+        }
+      }
+    }, 1000);
+  }
+
+  stop() {
+    clearInterval(this.interval);
+    this.setState({ running: false });
+  }
+
   render() {
     return (
       <div className="App">
@@ -379,7 +409,7 @@ export default class App extends Component {
             {
               Object.keys(this.chars).map((id) => {
                 if (-this.tapePos < this.state.tapeHeight * (Number(id) + 1) && window.innerWidth > this.state.tapeHeight * (Number(id)) + this.tapePos) {
-                  return (<input key={id} style={{
+                  return (<input key={id} num={id} style={{
                     height: this.state.tapeHeight,
                     width: this.state.tapeHeight,
                     backgroundColor: id % 2 ? "#4C566A" : "#3B4252",
@@ -399,6 +429,20 @@ export default class App extends Component {
               transition: this.state.running ? ".5s" : "0s",
             }} />
           </div>
+          {this.state.running ? (
+            <div className="button" style={{ bottom: this.state.tapeHeight + 20 }} onClick={() => this.stop()}>
+              <svg width="100%" height="100%">
+                <polygon points={"12,12 28,12 28,28 12,28"} fill="#2E3440" />
+              </svg>
+            </div>
+          ) : (
+              <div className="button" style={{ bottom: this.state.tapeHeight + 20 }} onClick={() => this.run()}>
+                <svg width="100%" height="100%">
+                  <polygon points={"12,10 30,20 12,30"} fill="#2E3440" />
+                </svg>
+              </div>
+            )
+          }
           {this.state.editingConnection && (
             <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
               <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => event.target.nextElementSibling.focus()} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => event.target.nextElementSibling.focus()} />, <input className="connection-input" type="text" name="move" maxLength="1" />
