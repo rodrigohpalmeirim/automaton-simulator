@@ -23,8 +23,8 @@ export default class App extends Component {
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.tempNode = "";
     this.contextMenu = { x: 0, y: 0, options: [] }
-    this.tapePos = 0;
     this.startCharId = 0;
+    this.startState = "q0";
 
     this.state = {
       draggingNode: false,
@@ -33,9 +33,11 @@ export default class App extends Component {
       contextMenu: false,
       tapeHeight: 100,
       focusedCharId: this.startCharId,
+      state: this.startState,
       running: false,
-      state: "q0",
     }
+
+    this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
 
     this.nodes = {
       q0: {
@@ -45,10 +47,11 @@ export default class App extends Component {
       }
     }
 
-    this.chars = {}
+    this.initChars = {};
     this.firstKey = 0;
-    for (var i = 0; i < window.innerWidth / this.state.tapeHeight; i++) {
-      this.chars[i] = "";
+    for (var i = Math.floor(-(window.innerWidth / 2) / this.state.tapeHeight); i < 2 + (window.innerWidth / 2) / this.state.tapeHeight; i++) {
+      if (this.initChars[i] === undefined)
+        this.initChars[i] = "";
     }
     this.lastKey = i - 1;
   }
@@ -123,7 +126,10 @@ export default class App extends Component {
 
   componentDidMount() {
     document.addEventListener("keydown", this.keyDownHandler);
-    window.addEventListener("resize", this.updateTape);
+    window.addEventListener("resize", () => {
+      this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
+      this.updateTape();
+    });
     document.addEventListener("mouseup", () => {
       document.removeEventListener("mousemove", this.dragTape)
     });
@@ -160,11 +166,11 @@ export default class App extends Component {
   updateTape() {
     while (-this.tapePos < this.state.tapeHeight * this.firstKey) {
       this.firstKey--;
-      this.chars[this.firstKey] = "";
+      this.initChars[this.firstKey] = "";
     }
     while (window.innerWidth > this.state.tapeHeight * (this.lastKey + 1) + this.tapePos) {
       this.lastKey++;
-      this.chars[this.lastKey] = "";
+      this.initChars[this.lastKey] = "";
     }
     this.forceUpdate();
   }
@@ -354,32 +360,42 @@ export default class App extends Component {
   }
 
   run() {
-    this.setState({ running: true });
-    this.interval = setInterval(() => {
-      for (const char in this.nodes[this.state.state].connections) {
-        if (char === this.chars[this.state.focusedCharId]) {
-          const connection = this.nodes[this.state.state].connections[char];
-          this.chars[this.state.focusedCharId] = connection.replaceChar;
-          try {
-            document.querySelector("#tape input[num='"+this.state.focusedCharId+"']").value = connection.replaceChar;
-          } catch (e) {}
-          switch (connection.move) {
-            case "L":
-              this.setState({focusedCharId: this.state.focusedCharId-1});
-              break;
-            case "R":
-              this.setState({focusedCharId: this.state.focusedCharId+1});
-              break;
+    if (this.nodes[this.state.state]) {
+      this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
+      this.updateTape();
+      setTimeout(() => { this.setState({ running: true }); }, 1);
+
+      this.chars = JSON.parse(JSON.stringify(this.initChars));
+
+      this.interval = setInterval(() => {
+        for (const char in this.nodes[this.state.state].connections) {
+          if (char === this.chars[this.state.focusedCharId]) {
+            const connection = this.nodes[this.state.state].connections[char];
+            this.chars[this.state.focusedCharId] = connection.replaceChar;
+            try {
+              document.querySelector("#tape input[num='" + this.state.focusedCharId + "']").value = connection.replaceChar;
+            } catch (e) { }
+            if (connection.move === "L") {
+              this.setState({ focusedCharId: this.state.focusedCharId - 1 });
+            } else if (connection.move === "R") {
+              this.setState({ focusedCharId: this.state.focusedCharId + 1 });
+            }
+            this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
+            this.updateTape();
+            this.setState({ state: connection.node });
+            break;
           }
-          this.setState({state: connection.node});
         }
-      }
-    }, 1000);
+      }, 1000);
+    }
   }
 
   stop() {
     clearInterval(this.interval);
-    this.setState({ running: false });
+    this.setState({ running: false, focusedCharId: this.startCharId, state: this.startState });
+    for (const input of document.querySelectorAll("#tape input")) {
+      input.value = this.initChars[input.getAttribute("num")];
+    }
   }
 
   render() {
@@ -407,8 +423,8 @@ export default class App extends Component {
           </svg>
           <div id="tape" style={{ height: this.state.tapeHeight }} onMouseDown={this.tapeMouseDownHandler}>
             {
-              Object.keys(this.chars).map((id) => {
-                if (-this.tapePos < this.state.tapeHeight * (Number(id) + 1) && window.innerWidth > this.state.tapeHeight * (Number(id)) + this.tapePos) {
+              Object.keys(this.initChars).map((id) => {
+                if (-this.tapePos < this.state.tapeHeight * (Number(id) + 2) && window.innerWidth > this.state.tapeHeight * (Number(id) - 1) + this.tapePos) {
                   return (<input key={id} num={id} style={{
                     height: this.state.tapeHeight,
                     width: this.state.tapeHeight,
@@ -416,8 +432,9 @@ export default class App extends Component {
                     position: "absolute",
                     bottom: 0,
                     left: id * this.state.tapeHeight + this.tapePos,
-                    fontSize: this.state.tapeHeight / 2
-                  }} maxLength="1" onInput={(event) => { this.chars[id] = event.target.value }} defaultValue={this.chars[id]} />
+                    fontSize: this.state.tapeHeight / 2,
+                    transition: this.state.running ? ".5s" : "0s",
+                  }} maxLength="1" onInput={(event) => { this.initChars[id] = event.target.value }} defaultValue={this.state.running ? this.chars[id] : this.initChars[id]} />
                   )
                 }
               })
@@ -425,7 +442,7 @@ export default class App extends Component {
             <div id="cursor" style={{
               height: this.state.tapeHeight - 20,
               width: this.state.tapeHeight - 20,
-              left: this.state.focusedCharId * this.state.tapeHeight + this.tapePos,
+              left: this.state.running ? window.innerWidth / 2 - this.state.tapeHeight / 2 : this.state.focusedCharId * this.state.tapeHeight + this.tapePos,
               transition: this.state.running ? ".5s" : "0s",
             }} />
           </div>

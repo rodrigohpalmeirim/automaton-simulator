@@ -74,6 +74,7 @@
   border: none;
   padding: 0;
   outline: none;
+  -webkit-user-drag: none;
 }
 
 #cursor {
