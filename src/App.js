@@ -102,7 +102,7 @@ export default class App extends Component {
               onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
             >
               <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-              <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440">{text}</text>
+              <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
             </g>
           )}
         </g>
@@ -114,7 +114,7 @@ export default class App extends Component {
     return (
       <g key={id} id={id} type="node" onMouseDown={() => {
         this.selectedNodeId = id;
-        this.selectedConnectionChar = "";
+        this.selectedConnectionChar = "temp";
       }}>
         <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0" />
         {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
@@ -204,7 +204,7 @@ export default class App extends Component {
   }
 
   createConnection(endNodeId) {
-    this.nodes[this.selectedNodeId].connections[""] = {
+    this.nodes[this.selectedNodeId].connections["temp"] = {
       node: endNodeId,
       replaceChar: "",
       move: "",
@@ -220,14 +220,14 @@ export default class App extends Component {
             }
           }
         }
-        this.nodes[this.selectedNodeId].connections[""].arrowCurve = 25;
+        this.nodes[this.selectedNodeId].connections["temp"].arrowCurve = 25;
       }
     }
     for (const char in this.nodes[this.selectedNodeId].connections) {
-      if (char !== "" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
+      if (char !== "temp" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
         this.nodes[this.selectedNodeId].connections[char].arrowCurve += 50;
     }
-    this.editConnection(this.selectedNodeId, "");
+    this.editConnection(this.selectedNodeId, "temp");
   }
 
   editConnection(nodeId, char) {
@@ -239,7 +239,7 @@ export default class App extends Component {
     const newChar = document.getElementsByClassName("connection-input")[0].value;
     const replaceChar = document.getElementsByClassName("connection-input")[1].value;
     const move = document.getElementsByClassName("connection-input")[2].value;
-    if (newChar && replaceChar && move) {
+    if (move) {
       const endNode = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].node;
       const arrowCurve = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].arrowCurve;
       delete this.nodes[this.editingConnection.node].connections[this.editingConnection.char];
@@ -257,7 +257,7 @@ export default class App extends Component {
 
   cancelConnection() {
     for (const id in this.nodes) {
-      delete this.nodes[id].connections[""];
+      delete this.nodes[id].connections["temp"];
     }
     this.setState({ editingConnection: false });
     delete this.nodes[this.tempNode];
@@ -347,7 +347,7 @@ export default class App extends Component {
       this.contextMenu.options = [
         <p key="0" onClick={() => { this.createNode(this.contextMenu.x, this.contextMenu.y) }}>Add node</p>
       ];
-    } else if (this.selectedConnectionChar) { // Connection
+    } else if (this.selectedConnectionChar !== "temp") { // Connection
       this.contextMenu.options = [
         <p key="0" onClick={() => { this.editConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Edit connection</p>,
         <p key="1" onClick={() => { this.removeConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Remove connection</p>
@@ -414,7 +414,7 @@ export default class App extends Component {
                   this.nodes[this.nodes[id].connections[char].node].x,
                   this.nodes[this.nodes[id].connections[char].node].y,
                   30,
-                  char + "→" + this.nodes[id].connections[char].replaceChar + "," + this.nodes[id].connections[char].move
+                  (char ? char : " ") + "→" + (this.nodes[id].connections[char].replaceChar ? this.nodes[id].connections[char].replaceChar : " ") + "," + this.nodes[id].connections[char].move
                 );
               });
             })}
