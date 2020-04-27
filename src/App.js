@@ -54,6 +54,7 @@ export default class App extends Component {
         this.initChars[i] = "";
     }
     this.lastKey = i - 1;
+    this.chars = {};
   }
 
   renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, text = "") {
@@ -164,13 +165,15 @@ export default class App extends Component {
   }
 
   updateTape() {
-    while (-this.tapePos < this.state.tapeHeight * this.firstKey) {
+    while (-this.tapePos < this.state.tapeHeight * (this.firstKey + 1)) {
       this.firstKey--;
       this.initChars[this.firstKey] = "";
+      this.chars[this.firstKey] = "";
     }
-    while (window.innerWidth > this.state.tapeHeight * (this.lastKey + 1) + this.tapePos) {
+    while (window.innerWidth > this.state.tapeHeight * this.lastKey + this.tapePos) {
       this.lastKey++;
       this.initChars[this.lastKey] = "";
+      this.chars[this.lastKey] = "";
     }
     this.forceUpdate();
   }
