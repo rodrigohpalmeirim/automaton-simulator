@@ -20,6 +20,8 @@ export default class App extends Component {
     this.cancelConnection = this.cancelConnection.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.contextMenuHandler = this.contextMenuHandler.bind(this);
+
+    this.nodeRadius = 25;
     this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
     this.tempNode = "";
     this.contextMenu = { x: 0, y: 0, options: [] }
@@ -58,31 +60,32 @@ export default class App extends Component {
   }
 
   renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, text = "") {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const d = Math.sqrt(dx ** 2 + dy ** 2);
-    const curve = nodeId ? this.nodes[nodeId].connections[char].arrowCurve : 0;
-    const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
-    const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
-    const dcl1x = x1 - cpx;
-    const dcl1y = y1 - cpy;
-    const dcl1 = Math.sqrt(dcl1x ** 2 + dcl1y ** 2);
-    const dcl2x = x2 - cpx;
-    const dcl2y = y2 - cpy;
-    const dcl2 = Math.sqrt(dcl2x ** 2 + dcl2y ** 2);
-    const sx = x1 - dcl1x * 30 / dcl1;
-    const sy = y1 - dcl1y * 30 / dcl1;
-    const ex = x2 - dcl2x * (endDistance + 14) / dcl2;
-    const ey = y2 - dcl2y * (endDistance + 14) / dcl2;
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var d = Math.sqrt(dx ** 2 + dy ** 2);
+    var curve = nodeId ? this.nodes[nodeId].connections[char].arrowCurve : 0;
 
-    if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
-      this.arrowCenter = {
-        x: ((sx + ex) / 2 + cpx) / 2,
-        y: ((sy + ey) / 2 + cpy) / 2
+    if (d > this.nodeRadius || (nodeId && this.nodes[nodeId].connections[char].node !== nodeId)) {
+      const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
+      const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
+      const dcl1x = x1 - cpx;
+      const dcl1y = y1 - cpy;
+      const dcl1 = Math.sqrt(dcl1x ** 2 + dcl1y ** 2);
+      const dcl2x = x2 - cpx;
+      const dcl2y = y2 - cpy;
+      const dcl2 = Math.sqrt(dcl2x ** 2 + dcl2y ** 2);
+      const sx = x1 - dcl1x * 30 / dcl1;
+      const sy = y1 - dcl1y * 30 / dcl1;
+      const ex = x2 - dcl2x * (endDistance + 14) / dcl2;
+      const ey = y2 - dcl2y * (endDistance + 14) / dcl2;
+
+      if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
+        this.arrowCenter = {
+          x: ((sx + ex) / 2 + cpx) / 2,
+          y: ((sy + ey) / 2 + cpy) / 2
+        }
       }
-    }
 
-    if (d > 0) {
       return (
         <g key={key} onMouseDown={() => {
           this.selectedNodeId = nodeId;
@@ -99,11 +102,58 @@ export default class App extends Component {
           />
           {text && (
             <g
-              onDoubleClick={() => { this.editConnection(nodeId, char) }}
+              onDoubleClick={() => {this.editConnection(nodeId, char) }}
               onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
             >
               <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
               <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
+            </g>
+          )}
+        </g>
+      );
+    } else {
+      var sign;
+      const cx1 = x1 - 30;
+      const cx2 = x1 + 30;
+      var cy1;
+      var cy2;
+      x2 = x1 + 20;
+      x1 -= 22;
+      if (curve < 70) {
+        sign = 1;
+        curve = Math.min(curve, 0);
+        cy1 = y1 - 70 + curve * 1.35;
+        cy2 = y1 - 70 + curve * 1.35;
+        y1 = y2 = y1 - 25;
+      } else {
+        sign = -1;
+        curve = Math.max(curve, 125);
+        cy1 = y1 - 100 + curve * 1.35;
+        cy2 = y1 - 100 + curve * 1.35;
+        y1 = y2 = y1 + 25;
+      }
+
+      if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
+        this.arrowCenter = {
+          x: x1 + 20,
+          y: y1 - 63 + 23*sign + curve
+        }
+      }
+
+      return (
+        <g key={key} onMouseDown={() => {
+          this.selectedNodeId = nodeId;
+          this.selectedConnectionChar = char;
+        }}>
+          <path d={`M ${x1 - 4} ${y1 - 8*sign} C ${cx1},${cy1} ${cx2},${cy2} ${x2} ${y2}`} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
+          <polygon points={`${x1},${y1} ${x1 - 13.5},${y1 - 11.9*sign} ${x1 + 5.78},${y1 - 17.1*sign}`} fill="#88C0D0" />
+          {text && (
+            <g
+              onDoubleClick={() => { this.editConnection(nodeId, char) }}
+              onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
+            >
+              <rect x={x1 - 7} y={y1 - 73 + 23*sign + curve} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
+              <text x={x1 - 3} y={y1 - 58 + 23*sign + curve} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
             </g>
           )}
         </g>
@@ -117,7 +167,7 @@ export default class App extends Component {
         this.selectedNodeId = id;
         this.selectedConnectionChar = "temp";
       }}>
-        <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r="25" fill="#88C0D0" />
+        <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r={this.nodeRadius} fill="#88C0D0" />
         {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
           <text x={this.nodes[id].x - 18} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
         }
@@ -160,7 +210,12 @@ export default class App extends Component {
     const y1 = startNode.y;
     const x2 = endNode.x;
     const y2 = endNode.y;
-    this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+
+    if (this.selectedNodeId === this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].node) {
+      this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = event.pageY - y1 + 64;
+    } else {
+      this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+    }
     this.forceUpdate();
   }
 
@@ -213,22 +268,30 @@ export default class App extends Component {
       move: "",
       arrowCurve: 0,
     }
-    for (const char in this.nodes[endNodeId].connections) {
-      if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId) {
-        if (Math.abs(this.nodes[endNodeId].connections[char].arrowCurve) < 25) {
-          const d = Math.abs(25 - this.nodes[endNodeId].connections[char].arrowCurve);
-          for (const char2 in this.nodes[endNodeId].connections) {
-            if (this.nodes[endNodeId].connections[char2].node === this.selectedNodeId && this.nodes[endNodeId].connections[char2].arrowCurve > -25) {
-              this.nodes[endNodeId].connections[char2].arrowCurve += d;
+    if (this.selectedNodeId !== endNodeId) {
+      for (const char in this.nodes[endNodeId].connections) {
+        if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId) {
+          if (Math.abs(this.nodes[endNodeId].connections[char].arrowCurve) < 25) {
+            const d = Math.abs(25 - this.nodes[endNodeId].connections[char].arrowCurve);
+            for (const char2 in this.nodes[endNodeId].connections) {
+              if (this.nodes[endNodeId].connections[char2].node === this.selectedNodeId && this.nodes[endNodeId].connections[char2].arrowCurve > -25) {
+                this.nodes[endNodeId].connections[char2].arrowCurve += d;
+              }
             }
           }
+          this.nodes[this.selectedNodeId].connections["temp"].arrowCurve = 25;
         }
-        this.nodes[this.selectedNodeId].connections["temp"].arrowCurve = 25;
       }
-    }
-    for (const char in this.nodes[this.selectedNodeId].connections) {
-      if (char !== "temp" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
-        this.nodes[this.selectedNodeId].connections[char].arrowCurve += 50;
+      for (const char in this.nodes[this.selectedNodeId].connections) {
+        if (char !== "temp" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
+          this.nodes[this.selectedNodeId].connections[char].arrowCurve += 50;
+      }
+    } else {
+      for (const char in this.nodes[endNodeId].connections) {
+        if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId && char !== "temp") {
+          this.nodes[endNodeId].connections[char].arrowCurve = Math.max(this.nodes[endNodeId].connections[char].arrowCurve+20, 125);
+        }
+      }
     }
     this.editConnection(this.selectedNodeId, "temp");
   }
