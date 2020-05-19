@@ -1,47 +1,39 @@
 import React, { Component } from 'react';
 import './App.css';
-
+import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
+import { renderArrow, dragArrow, dragLabel } from './arrow';
+import { updateTape, dragTape, tapeMouseDownHandler } from './tape';
+import { createConnection, editConnection, applyConnectionChanges, cancelConnection, removeConnection } from './connection';
+import { run, stop } from './simulation';
 export default class App extends Component {
 
   constructor(props) {
     super(props);
 
-    this.dragNode = this.dragNode.bind(this);
-    this.dragArrow = this.dragArrow.bind(this);
-    this.dragLabel = this.dragLabel.bind(this);
-    this.dragTape = this.dragTape.bind(this);
-    this.updateTape = this.updateTape.bind(this);
-    this.nodeMouseDownHandler = this.nodeMouseDownHandler.bind(this);
-    this.tapeMouseDownHandler = this.tapeMouseDownHandler.bind(this);
+    document.update = () => { this.forceUpdate() }
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
-    this.editConnection = this.editConnection.bind(this);
-    this.applyConnectionChanges = this.applyConnectionChanges.bind(this);
-    this.cancelConnection = this.cancelConnection.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.contextMenuHandler = this.contextMenuHandler.bind(this);
 
-    this.nodeRadius = 25;
-    this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
-    this.tempNode = "";
-    this.contextMenu = { x: 0, y: 0, options: [] }
-    this.startCharId = 0;
-    this.startState = "q0";
+    document.nodeRadius = 25;
+    document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
+    document.tempNode = "";
+    document.contextMenu = { x: 0, y: 0, options: [] }
+    document.startCharId = 0;
+    document.startState = "q0";
+    document.tapeHeight = 100;
+    document.draggingNode = false;
+    document.draggingArrow = false;
+    document.editingConnection = false;
+    document.showContextMenu = false;
+    document.focusedCharId = document.startCharId;
+    document.state = document.startState;
+    document.running = false;
 
-    this.state = {
-      draggingNode: false,
-      draggingArrow: false,
-      editingConnection: false,
-      contextMenu: false,
-      tapeHeight: 100,
-      focusedCharId: this.startCharId,
-      state: this.startState,
-      running: false,
-    }
+    document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
-    this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
-
-    this.nodes = {
+    document.nodes = {
       q0: {
         x: 200,
         y: 200,
@@ -49,419 +41,96 @@ export default class App extends Component {
       }
     }
 
-    this.initChars = {};
-    this.firstKey = 0;
-    for (var i = Math.floor(-(window.innerWidth / 2) / this.state.tapeHeight); i < 2 + (window.innerWidth / 2) / this.state.tapeHeight; i++) {
-      if (this.initChars[i] === undefined)
-        this.initChars[i] = "";
+    document.initChars = {};
+    document.firstKey = 0;
+    for (var i = Math.floor(-(window.innerWidth / 2) / document.tapeHeight); i < 2 + (window.innerWidth / 2) / document.tapeHeight; i++) {
+      if (document.initChars[i] === undefined)
+        document.initChars[i] = "";
     }
-    this.lastKey = i - 1;
-    this.chars = {};
-  }
-
-  renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, text = "") {
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var d = Math.sqrt(dx ** 2 + dy ** 2);
-    var curve = nodeId ? this.nodes[nodeId].connections[char].arrowCurve : 0;
-
-    if (d > this.nodeRadius || (nodeId && this.nodes[nodeId].connections[char].node !== nodeId)) {
-      const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
-      const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
-      const dcl1x = x1 - cpx;
-      const dcl1y = y1 - cpy;
-      const dcl1 = Math.sqrt(dcl1x ** 2 + dcl1y ** 2);
-      const dcl2x = x2 - cpx;
-      const dcl2y = y2 - cpy;
-      const dcl2 = Math.sqrt(dcl2x ** 2 + dcl2y ** 2);
-      const sx = x1 - dcl1x * 30 / dcl1;
-      const sy = y1 - dcl1y * 30 / dcl1;
-      const ex = x2 - dcl2x * (endDistance + 14) / dcl2;
-      const ey = y2 - dcl2y * (endDistance + 14) / dcl2;
-
-      if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
-        this.arrowCenter = {
-          x: ((sx + ex) / 2 + cpx) / 2,
-          y: ((sy + ey) / 2 + cpy) / 2
-        }
-      }
-
-      return (
-        <g key={key} onMouseDown={() => {
-          this.selectedNodeId = nodeId;
-          this.selectedConnectionChar = char;
-        }}>
-          <path d={"M " + sx + " " + sy + " Q " + cpx + " " + cpy + " " + ex + " " + ey} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
-          <polygon
-            points={
-              (x2 - dcl2x * endDistance / dcl2) + "," + (y2 - dcl2y * endDistance / dcl2) + " " +
-              (x2 - dcl2x * (endDistance + 15) / dcl2 - 10 * dcl2y / dcl2) + "," + (y2 - dcl2y * (endDistance + 15) / dcl2 + 10 * dcl2x / dcl2) + " " +
-              (x2 - dcl2x * (endDistance + 15) / dcl2 + 10 * dcl2y / dcl2) + "," + (y2 - dcl2y * (endDistance + 15) / dcl2 - 10 * dcl2x / dcl2)
-            }
-            fill="#88C0D0"
-          />
-          {text && (
-            <g
-              onDoubleClick={() => {this.editConnection(nodeId, char) }}
-              onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
-            >
-              <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-              <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
-            </g>
-          )}
-        </g>
-      );
-    } else {
-      var sign;
-      const cx1 = x1 - 30;
-      const cx2 = x1 + 30;
-      var cy1;
-      var cy2;
-      x2 = x1 + 20;
-      x1 -= 22;
-      if (curve < 70) {
-        sign = 1;
-        curve = Math.min(curve, 0);
-        cy1 = y1 - 70 + curve * 1.35;
-        cy2 = y1 - 70 + curve * 1.35;
-        y1 = y2 = y1 - 25;
-      } else {
-        sign = -1;
-        curve = Math.max(curve, 125);
-        cy1 = y1 - 100 + curve * 1.35;
-        cy2 = y1 - 100 + curve * 1.35;
-        y1 = y2 = y1 + 25;
-      }
-
-      if (this.selectedNodeId === nodeId && this.selectedConnectionChar === char) {
-        this.arrowCenter = {
-          x: x1 + 20,
-          y: y1 - 63 + 23*sign + curve
-        }
-      }
-
-      return (
-        <g key={key} onMouseDown={() => {
-          this.selectedNodeId = nodeId;
-          this.selectedConnectionChar = char;
-        }}>
-          <path d={`M ${x1 - 4} ${y1 - 8*sign} C ${cx1},${cy1} ${cx2},${cy2} ${x2} ${y2}`} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
-          <polygon points={`${x1},${y1} ${x1 - 13.5},${y1 - 11.9*sign} ${x1 + 5.78},${y1 - 17.1*sign}`} fill="#88C0D0" />
-          {text && (
-            <g
-              onDoubleClick={() => { this.editConnection(nodeId, char) }}
-              onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", this.dragLabel) }}
-            >
-              <rect x={x1 - 7} y={y1 - 73 + 23*sign + curve} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-              <text x={x1 - 3} y={y1 - 58 + 23*sign + curve} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
-            </g>
-          )}
-        </g>
-      );
-    }
-  }
-
-  renderNode(id) {
-    return (
-      <g key={id} id={id} type="node" onMouseDown={() => {
-        this.selectedNodeId = id;
-        this.selectedConnectionChar = "temp";
-      }}>
-        <circle cx={this.nodes[id].x} cy={this.nodes[id].y} r={this.nodeRadius} fill="#88C0D0" />
-        {id.length === 2 ? <text x={this.nodes[id].x - 12} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
-          <text x={this.nodes[id].x - 18} y={this.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
-        }
-      </g>
-    );
+    document.lastKey = i - 1;
+    document.chars = {};
   }
 
   componentDidMount() {
     document.addEventListener("keydown", this.keyDownHandler);
     window.addEventListener("resize", () => {
-      this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
-      this.updateTape();
+      document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
+      updateTape();
     });
     document.addEventListener("mouseup", () => {
-      document.removeEventListener("mousemove", this.dragTape)
+      document.removeEventListener("mousemove", dragTape)
     });
-  }
-
-  dragNode(event) {
-    this.nodes[this.selectedNodeId].x = event.pageX - this.offset.x;
-    this.nodes[this.selectedNodeId].y = event.pageY - this.offset.y;
-    this.forceUpdate();
-  }
-
-  dragArrow(event) {
-    this.arrowPos = {
-      node: this.selectedNodeId,
-      x1: this.nodes[this.selectedNodeId].x,
-      y1: this.nodes[this.selectedNodeId].y,
-      x2: event.pageX,
-      y2: event.pageY
-    }
-    this.forceUpdate();
-  }
-
-  dragLabel(event) {
-    const startNode = this.nodes[this.selectedNodeId];
-    const endNode = this.nodes[this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].node]
-    const x1 = startNode.x;
-    const y1 = startNode.y;
-    const x2 = endNode.x;
-    const y2 = endNode.y;
-
-    if (this.selectedNodeId === this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].node) {
-      this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = event.pageY - y1 + 64;
-    } else {
-      this.nodes[this.selectedNodeId].connections[this.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
-    }
-    this.forceUpdate();
-  }
-
-  updateTape() {
-    while (-this.tapePos < this.state.tapeHeight * (this.firstKey + 1)) {
-      this.firstKey--;
-      this.initChars[this.firstKey] = "";
-      this.chars[this.firstKey] = "";
-    }
-    while (window.innerWidth > this.state.tapeHeight * this.lastKey + this.tapePos) {
-      this.lastKey++;
-      this.initChars[this.lastKey] = "";
-      this.chars[this.lastKey] = "";
-    }
-    this.forceUpdate();
-  }
-
-  dragTape(event) {
-    this.tapePos = event.pageX - this.tapeClickDelta;
-    this.updateTape();
-  }
-
-  createNode(x, y) {
-    var newId = "q0";
-    for (const id in this.nodes) {
-      if (id.substr(1) >= newId.substr(1)) {
-        newId = "q" + (Number(id.substr(1)) + 1);
-      }
-    }
-    this.nodes[newId] = { x: x, y: y, connections: {} }
-    this.forceUpdate();
-    return newId;
-  }
-
-  removeNode(nodeId) {
-    for (const node in this.nodes) {
-      for (const char in this.nodes[node].connections) {
-        if (this.nodes[node].connections[char].node === nodeId) {
-          this.removeConnection(node, char);
-        }
-      }
-    }
-    delete this.nodes[nodeId];
-  }
-
-  createConnection(endNodeId) {
-    this.nodes[this.selectedNodeId].connections["temp"] = {
-      node: endNodeId,
-      replaceChar: "",
-      move: "",
-      arrowCurve: 0,
-    }
-    if (this.selectedNodeId !== endNodeId) {
-      for (const char in this.nodes[endNodeId].connections) {
-        if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId) {
-          if (Math.abs(this.nodes[endNodeId].connections[char].arrowCurve) < 25) {
-            const d = Math.abs(25 - this.nodes[endNodeId].connections[char].arrowCurve);
-            for (const char2 in this.nodes[endNodeId].connections) {
-              if (this.nodes[endNodeId].connections[char2].node === this.selectedNodeId && this.nodes[endNodeId].connections[char2].arrowCurve > -25) {
-                this.nodes[endNodeId].connections[char2].arrowCurve += d;
-              }
-            }
-          }
-          this.nodes[this.selectedNodeId].connections["temp"].arrowCurve = 25;
-        }
-      }
-      for (const char in this.nodes[this.selectedNodeId].connections) {
-        if (char !== "temp" && this.nodes[this.selectedNodeId].connections[char].node === endNodeId && this.nodes[this.selectedNodeId].connections[char].arrowCurve >= 0)
-          this.nodes[this.selectedNodeId].connections[char].arrowCurve += 50;
-      }
-    } else {
-      for (const char in this.nodes[endNodeId].connections) {
-        if (this.nodes[endNodeId].connections[char].node === this.selectedNodeId && char !== "temp") {
-          this.nodes[endNodeId].connections[char].arrowCurve = Math.max(this.nodes[endNodeId].connections[char].arrowCurve+20, 125);
-        }
-      }
-    }
-    this.editConnection(this.selectedNodeId, "temp");
-  }
-
-  editConnection(nodeId, char) {
-    this.setState({ editingConnection: true });
-    this.editingConnection = { node: nodeId, char: char }
-  }
-
-  applyConnectionChanges() {
-    const newChar = document.getElementsByClassName("connection-input")[0].value;
-    const replaceChar = document.getElementsByClassName("connection-input")[1].value;
-    const move = document.getElementsByClassName("connection-input")[2].value;
-    if (move) {
-      const endNode = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].node;
-      const arrowCurve = this.nodes[this.editingConnection.node].connections[this.editingConnection.char].arrowCurve;
-      delete this.nodes[this.editingConnection.node].connections[this.editingConnection.char];
-      this.nodes[this.editingConnection.node].connections[newChar] = {
-        node: endNode,
-        replaceChar: replaceChar,
-        move: move,
-        arrowCurve: arrowCurve,
-      }
-      this.tempNode = "";
-      return true;
-    }
-    return false;
-  }
-
-  cancelConnection() {
-    for (const id in this.nodes) {
-      delete this.nodes[id].connections["temp"];
-    }
-    this.setState({ editingConnection: false });
-    delete this.nodes[this.tempNode];
-    this.forceUpdate();
-  }
-
-  removeConnection(nodeId, char) {
-    delete this.nodes[nodeId].connections[char];
-  }
-
-  nodeMouseDownHandler(event) {
-    if (event.button === 0 && event.target.parentElement.getAttribute("id") !== this.tempNode) {
-      this.selectedNodeId = event.target.parentElement.getAttribute("id");
-      this.offset = {
-        x: event.pageX - this.nodes[this.selectedNodeId].x,
-        y: event.pageY - this.nodes[this.selectedNodeId].y
-      };
-      if (!event.shiftKey) {
-        this.setState({ draggingNode: true });
-        document.addEventListener("mousemove", this.dragNode);
-      } else {
-        this.setState({ draggingArrow: true });
-        document.addEventListener("mousemove", this.dragArrow);
-      }
-    }
-  }
-
-  tapeMouseDownHandler(event) {
-    if (event.button === 0) {
-      this.tapeClickDelta = event.pageX - this.tapePos;
-      document.addEventListener("mousemove", this.dragTape);
-    }
   }
 
   mouseDownHandler(event) {
-    this.setState({ contextMenu: false });
-    if (this.state.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
-      if (this.applyConnectionChanges()) {
-        this.setState({ editingConnection: false });
+    document.showContextMenu = false;
+    if (document.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
+      if (applyConnectionChanges()) {
+        document.editingConnection = false;
       } else {
-        this.cancelConnection();
+        cancelConnection();
       }
     }
     try {
       if (event.target.parentElement.getAttribute("type") === "node") {
-        this.nodeMouseDownHandler(event);
+        nodeMouseDownHandler(event);
       }
     } catch (e) { }
-    this.tempNode = "";
+    document.tempNode = "";
+    document.update();
   }
 
   mouseUpHandler(event) {
-    document.removeEventListener("mousemove", this.dragLabel);
-    if (this.state.draggingNode) document.removeEventListener("mousemove", this.dragNode);
-    if (this.state.draggingArrow) {
-      document.removeEventListener("mousemove", this.dragArrow);
+    document.removeEventListener("mousemove", dragLabel);
+    if (document.draggingNode) document.removeEventListener("mousemove", dragNode);
+    if (document.draggingArrow) {
+      document.removeEventListener("mousemove", dragArrow);
       if (event.target.parentElement.getAttribute("type") === "node") {
-        this.createConnection(event.target.parentElement.getAttribute("id"));
+        createConnection(event.target.parentElement.getAttribute("id"));
       } else {
-        const newId = this.createNode(event.pageX, event.pageY);
-        this.tempNode = newId;
-        this.createConnection(newId);
+        const newId = createNode(event.pageX, event.pageY);
+        document.tempNode = newId;
+        createConnection(newId);
       }
     }
-    this.setState({ draggingNode: false, draggingArrow: false });
-    this.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
+    document.draggingNode = false;
+    document.draggingArrow = false;
+    document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
   }
 
   keyDownHandler(event) {
-    if (this.state.editingConnection) {
-      if (event.key === "Enter" && this.applyConnectionChanges()) {
-        this.setState({ editingConnection: false });
+    if (document.editingConnection) {
+      if (event.key === "Enter" && applyConnectionChanges()) {
+        document.editingConnection = false;
+        document.update();
       } else if (event.key === "Escape") {
-        this.cancelConnection();
+        cancelConnection();
       }
     }
   }
 
   contextMenuHandler(event) {
     event.preventDefault();
-    this.setState({ contextMenu: true })
-    this.contextMenu = {
+    document.showContextMenu = true;
+    document.contextMenu = {
       x: event.pageX,
       y: event.pageY
     }
     if (event.target.tagName === "svg") { // Background
-      this.contextMenu.options = [
-        <p key="0" onClick={() => { this.createNode(this.contextMenu.x, this.contextMenu.y) }}>Add node</p>
+      document.contextMenu.options = [
+        <p key="0" onClick={() => { createNode(document.contextMenu.x, document.contextMenu.y) }}>Add node</p>
       ];
-    } else if (this.selectedConnectionChar !== "temp") { // Connection
-      this.contextMenu.options = [
-        <p key="0" onClick={() => { this.editConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Edit connection</p>,
-        <p key="1" onClick={() => { this.removeConnection(this.selectedNodeId, this.selectedConnectionChar) }}>Remove connection</p>
+    } else if (document.selectedConnectionChar !== "temp") { // Connection
+      document.contextMenu.options = [
+        <p key="0" onClick={() => { editConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Edit connection</p>,
+        <p key="1" onClick={() => { removeConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Remove connection</p>
       ];
     } else { // Node
-      this.contextMenu.options = [
-        <p key="0" onClick={() => { this.removeNode(this.selectedNodeId) }}>Remove node</p>
+      document.contextMenu.options = [
+        <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>
       ];
     }
-  }
-
-  run() {
-    if (this.nodes[this.state.state]) {
-      this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
-      this.updateTape();
-      setTimeout(() => { this.setState({ running: true }); }, 1);
-
-      this.chars = JSON.parse(JSON.stringify(this.initChars));
-
-      this.interval = setInterval(() => {
-        for (const char in this.nodes[this.state.state].connections) {
-          if (char === this.chars[this.state.focusedCharId]) {
-            const connection = this.nodes[this.state.state].connections[char];
-            this.chars[this.state.focusedCharId] = connection.replaceChar;
-            try {
-              document.querySelector("#tape input[num='" + this.state.focusedCharId + "']").value = connection.replaceChar;
-            } catch (e) { }
-            if (connection.move === "L") {
-              this.setState({ focusedCharId: this.state.focusedCharId - 1 });
-            } else if (connection.move === "R") {
-              this.setState({ focusedCharId: this.state.focusedCharId + 1 });
-            }
-            this.tapePos = window.innerWidth / 2 - this.state.tapeHeight / 2 - this.state.focusedCharId * this.state.tapeHeight;
-            this.updateTape();
-            this.setState({ state: connection.node });
-            break;
-          }
-        }
-      }, 1000);
-    }
-  }
-
-  stop() {
-    clearInterval(this.interval);
-    this.setState({ running: false, focusedCharId: this.startCharId, state: this.startState });
-    for (const input of document.querySelectorAll("#tape input")) {
-      input.value = this.initChars[input.getAttribute("num")];
-    }
+    document.update();
   }
 
   render() {
@@ -469,71 +138,71 @@ export default class App extends Component {
       <div className="App">
         <header className="App-header">
           <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseDown={this.mouseDownHandler} onMouseUp={this.mouseUpHandler} onContextMenu={this.contextMenuHandler}>
-            {Object.keys(this.nodes).map((id) => {
-              return Object.keys(this.nodes[id].connections).map((char, key) => {
-                return this.renderArrow(
+            {Object.keys(document.nodes).map((id) => {
+              return Object.keys(document.nodes[id].connections).map((char, key) => {
+                return renderArrow(
                   key,
                   id,
                   char,
-                  this.nodes[id].x,
-                  this.nodes[id].y,
-                  this.nodes[this.nodes[id].connections[char].node].x,
-                  this.nodes[this.nodes[id].connections[char].node].y,
+                  document.nodes[id].x,
+                  document.nodes[id].y,
+                  document.nodes[document.nodes[id].connections[char].node].x,
+                  document.nodes[document.nodes[id].connections[char].node].y,
                   30,
-                  (char ? char : " ") + "→" + (this.nodes[id].connections[char].replaceChar ? this.nodes[id].connections[char].replaceChar : " ") + "," + this.nodes[id].connections[char].move
+                  (char ? char : " ") + "→" + (document.nodes[id].connections[char].replaceChar ? document.nodes[id].connections[char].replaceChar : " ") + "," + document.nodes[id].connections[char].move
                 );
               });
             })}
-            {this.state.draggingArrow && this.renderArrow("user", "", "", this.arrowPos.x1, this.arrowPos.y1, this.arrowPos.x2, this.arrowPos.y2)}
-            {Object.keys(this.nodes).map((id) => this.renderNode(id))}
+            {document.draggingArrow && renderArrow("user", "", "", document.arrowPos.x1, document.arrowPos.y1, document.arrowPos.x2, document.arrowPos.y2)}
+            {Object.keys(document.nodes).map((id) => renderNode(id))}
           </svg>
-          <div id="tape" style={{ height: this.state.tapeHeight }} onMouseDown={this.tapeMouseDownHandler}>
+          <div id="tape" style={{ height: document.tapeHeight }} onMouseDown={tapeMouseDownHandler}>
             {
-              Object.keys(this.initChars).map((id) => {
-                if (-this.tapePos < this.state.tapeHeight * (Number(id) + 2) && window.innerWidth > this.state.tapeHeight * (Number(id) - 1) + this.tapePos) {
+              Object.keys(document.initChars).map((id) => {
+                if (-document.tapePos < document.tapeHeight * (Number(id) + 2) && window.innerWidth > document.tapeHeight * (Number(id) - 1) + document.tapePos) {
                   return (<input key={id} num={id} style={{
-                    height: this.state.tapeHeight,
-                    width: this.state.tapeHeight,
+                    height: document.tapeHeight,
+                    width: document.tapeHeight,
                     backgroundColor: id % 2 ? "#4C566A" : "#3B4252",
                     position: "absolute",
                     bottom: 0,
-                    left: id * this.state.tapeHeight + this.tapePos,
-                    fontSize: this.state.tapeHeight / 2,
-                    transition: this.state.running ? ".5s" : "0s",
-                  }} maxLength="1" onInput={(event) => { this.initChars[id] = event.target.value }} defaultValue={this.state.running ? this.chars[id] : this.initChars[id]} />
+                    left: id * document.tapeHeight + document.tapePos,
+                    fontSize: document.tapeHeight / 2,
+                    transition: document.running ? ".5s" : "0s",
+                  }} maxLength="1" onInput={(event) => { document.initChars[id] = event.target.value }} defaultValue={document.running ? document.chars[id] : document.initChars[id]} />
                   )
                 }
               })
             }
             <div id="cursor" style={{
-              height: this.state.tapeHeight - 20,
-              width: this.state.tapeHeight - 20,
-              left: this.state.running ? window.innerWidth / 2 - this.state.tapeHeight / 2 : this.state.focusedCharId * this.state.tapeHeight + this.tapePos,
-              transition: this.state.running ? ".5s" : "0s",
+              height: document.tapeHeight - 20,
+              width: document.tapeHeight - 20,
+              left: document.running ? window.innerWidth / 2 - document.tapeHeight / 2 : document.focusedCharId * document.tapeHeight + document.tapePos,
+              transition: document.running ? ".5s" : "0s",
             }} />
           </div>
-          {this.state.running ? (
-            <div className="button" style={{ bottom: this.state.tapeHeight + 20 }} onClick={() => this.stop()}>
+          {document.running ? (
+            <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => stop()}>
               <svg width="100%" height="100%">
                 <polygon points={"12,12 28,12 28,28 12,28"} fill="#2E3440" />
               </svg>
             </div>
           ) : (
-              <div className="button" style={{ bottom: this.state.tapeHeight + 20 }} onClick={() => this.run()}>
+              <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => run()}>
                 <svg width="100%" height="100%">
                   <polygon points={"12,10 30,20 12,30"} fill="#2E3440" />
                 </svg>
               </div>
             )
           }
-          {this.state.editingConnection && (
-            <form id="connection-box" style={{ left: this.arrowCenter.x, top: this.arrowCenter.y }}>
+          {document.editingConnection && (
+            <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
               <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => event.target.nextElementSibling.focus()} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => event.target.nextElementSibling.focus()} />, <input className="connection-input" type="text" name="move" maxLength="1" />
             </form>
           )}
-          {this.state.contextMenu && (
-            <div style={{ left: this.contextMenu.x, top: this.contextMenu.y }} id="context-menu" onClick={() => this.setState({ contextMenu: false })}>
-              {this.contextMenu.options.map((option) => option)}
+          {document.showContextMenu && (
+            <div style={{ left: document.contextMenu.x, top: document.contextMenu.y }} id="context-menu" onClick={() => { document.showContextMenu = false; document.update(); }}>
+              {document.contextMenu.options.map((option) => option)}
             </div>
           )}
         </header>
