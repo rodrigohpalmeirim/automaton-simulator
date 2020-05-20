@@ -3,6 +3,9 @@ import { dragArrow } from './arrow';
 import { removeConnection } from './connection';
 
 export function renderNode(id) {
+    if (typeof document.nodes[id].x !== "number" || typeof document.nodes[id].y !== "number")
+        throw TypeError;
+
     return (
         <g key={id} id={id} type="node" onMouseDown={() => {
             document.selectedNodeId = id;

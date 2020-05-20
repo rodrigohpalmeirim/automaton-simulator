@@ -2,7 +2,7 @@ export function createConnection(endNodeId) {
     document.nodes[document.selectedNodeId].connections["temp"] = {
         node: endNodeId,
         replaceChar: "",
-        move: "",
+        move: "S",
         arrowCurve: 0,
     }
     if (document.selectedNodeId !== endNodeId) {
@@ -43,7 +43,7 @@ export function applyConnectionChanges() {
     const newChar = document.getElementsByClassName("connection-input")[0].value;
     const replaceChar = document.getElementsByClassName("connection-input")[1].value;
     const move = document.getElementsByClassName("connection-input")[2].value;
-    if (move) {
+    if (["L", "R", "S"].includes(move)) {
         const endNode = document.nodes[document.editingConnection.node].connections[document.editingConnection.char].node;
         const arrowCurve = document.nodes[document.editingConnection.node].connections[document.editingConnection.char].arrowCurve;
         delete document.nodes[document.editingConnection.node].connections[document.editingConnection.char];

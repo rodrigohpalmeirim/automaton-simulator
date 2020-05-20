@@ -125,7 +125,7 @@ export function dragLabel(event) {
     if (document.selectedNodeId === document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].node) {
         document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].arrowCurve = event.pageY - y1 + 64;
     } else {
-        document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].arrowCurve = ((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
+        document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].arrowCurve = Math.round(((y2 - y1) * event.pageX - (x2 - x1) * event.pageY + x2 * y1 - x1 * y2) / Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2));
     }
     document.update();
 }

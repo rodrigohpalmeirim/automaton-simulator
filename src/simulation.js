@@ -6,6 +6,7 @@ export function run() {
     if (document.nodes[document.state]) {
         document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
         updateTape();
+        document.update();
         setTimeout(() => { document.running = true; document.update(); }, 1);
 
         document.chars = JSON.parse(JSON.stringify(document.initChars));
@@ -25,6 +26,7 @@ export function run() {
                     }
                     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
                     updateTape();
+                    document.update();
                     document.state = connection.node;
                     break;
                 }

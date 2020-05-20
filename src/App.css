@@ -1,3 +1,7 @@
+:root {
+  overflow: hidden;
+}
+
 * {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -81,6 +85,36 @@
   position: absolute;
   border: 10px solid #88C0D0;
   pointer-events: none;
+}
+
+#json-pane {
+  position: absolute;
+  background-color: #3B4252;
+  width: 400px;
+  top: 100px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+#json {
+  font-size: 18px;
+  font-family: "mono";
+  color: #D8DEE9;
+  text-align: left;
+  margin: 0px;
+  padding: 20px;
+  overflow-x: hidden;
+  width: 100%;
+  height: calc(100% - 40px);
+  background-color: transparent;
+  border: none;
+  -ms-overflow-style: none;
+}
+#json::-webkit-scrollbar {
+  display: none;
+}
+#json:focus {
+  outline-width: 0;
 }
 
 .button {

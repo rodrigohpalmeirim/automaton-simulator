@@ -9,12 +9,12 @@ export function updateTape() {
         document.initChars[document.lastKey] = "";
         document.chars[document.lastKey] = "";
     }
-    document.update();
 }
 
 export function dragTape(event) {
     document.tapePos = event.pageX - document.tapeMouseDownHandler;
     updateTape();
+    document.update();
 }
 
 export function tapeMouseDownHandler(event) {
