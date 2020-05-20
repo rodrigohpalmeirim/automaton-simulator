@@ -1,7 +1,19 @@
-fix short arrows when nodes are too close
 fix connections replaced when new one created with same value
+fix pressing J toggles pane when writing text
+fix short arrows when nodes are too close
+fix editing while running
+fix context menu not closing when clicked on tape
+fix tape reset when invalid json string
+add speed controls
+add initial node control and display
+add import and export
+add localStorage saving
+add json pane toggle button
+add JSON free editing mode
+add instructions
+add undo/redo
+add panning
 add node renaming
-add label moving
-add shadows
 add group selection
 add multiple connections in a single arrow
+add shadows
