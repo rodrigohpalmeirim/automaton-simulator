@@ -1,5 +1,4 @@
 fix editing while running
-fix tape reset when invalid json string
 add fallback font
 add speed controls
 add initial node control and display

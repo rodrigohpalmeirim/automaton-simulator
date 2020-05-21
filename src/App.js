@@ -157,9 +157,14 @@ export default class App extends Component {
     document.update();
   }
 
-  parseJSON() {
+  parseJSON(json) {
     try {
-      const json = JSON.parse(document.getElementById("json").value);
+      json = JSON.parse(json);
+      if (typeof json["startState"] !== "string" ||
+          typeof json["tape"]["string"] !== "string" ||
+          typeof json["tape"]["startPos"] !== "number") {
+            throw TypeError;
+      }
       document.startState = json["startState"];
       document.nodes = json["nodes"];
       document.initChars = {};
@@ -176,7 +181,9 @@ export default class App extends Component {
       for (const input of document.querySelectorAll("#tape input")) {
         input.value = document.initChars[input.getAttribute("num")];
       }
-    } catch (e) { }
+    } catch (e) {
+      this.parseJSON(document.json);
+    }
     document.update();
   }
 
@@ -285,7 +292,7 @@ export default class App extends Component {
               height: window.innerHeight - document.tapeHeight - 200,
               right: document.showPane ? 20 : -380,
             }}>
-              <textarea id="json" onInput={this.parseJSON} defaultValue={this.updateJSON()} spellCheck="false" />
+              <textarea id="json" onInput={() => { this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
             </div>
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
@@ -302,13 +309,12 @@ export default class App extends Component {
       );
     } catch (e) {
       console.log("DEBUG: " + e);
-      document.nodes = document.json;
-      document.update();
+      this.parseJSON(document.json);
     }
     return html;
   }
 
   componentDidUpdate() {
-    document.json = document.nodes;
+    document.json = this.updateJSON();
   }
 }
