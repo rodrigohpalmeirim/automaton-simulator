@@ -8,6 +8,8 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
     var curve = nodeId ? document.nodes[nodeId].connections[char].arrowCurve : 0;
 
     if (d > document.nodeRadius || (nodeId && document.nodes[nodeId].connections[char].node !== nodeId)) {
+        if (d < 150 && Math.abs(curve) < Math.min(150-d, 50))
+            curve = Math.min(150-d, 50) * (curve ? Math.sign(curve) : 1);
         const cpx = x1 + dx / 2 + dy / d * curve * 1.9;
         const cpy = y1 + dy / 2 - dx / d * curve * 1.9;
         const dcl1x = x1 - cpx;
