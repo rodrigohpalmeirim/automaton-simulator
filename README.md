@@ -1,4 +1,4 @@
-![Logo](/public/logo.png){:height="200px" }
+![Logo](/public/logo.png)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
