@@ -26,7 +26,8 @@ export function dragNode(event) {
 export function createNode(x, y) {
     var i = 0;
     for (const id in document.nodes) {
-        if (id === "q" + i) i++;
+        if (Object.keys(document.nodes).includes("q" + i)) i++;
+        else break;
     }
     var newId = "q" + i;
     document.nodes[newId] = { x: x, y: y, connections: {} }
