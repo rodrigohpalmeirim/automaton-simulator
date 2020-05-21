@@ -39,8 +39,8 @@ export default class App extends Component {
 
     document.nodes = {
       q0: {
-        x: 200,
-        y: 200,
+        x: Math.round((window.innerWidth - 400) / 2),
+        y: Math.round((window.innerHeight - document.tapeHeight) / 2),
         connections: {}
       }
     }
