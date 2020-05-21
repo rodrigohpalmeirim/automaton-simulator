@@ -120,7 +120,7 @@ export default class App extends Component {
       }
     }
 
-    if (event.key === "j") {
+    if (event.key === "j" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
       document.showPane = !document.showPane;
       document.update();
     }

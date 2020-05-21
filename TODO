@@ -1,4 +1,3 @@
-fix pressing J toggles pane when writing text
 fix editing while running
 fix tape reset when invalid json string
 add fallback font
