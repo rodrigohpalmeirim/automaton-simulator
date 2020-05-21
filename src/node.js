@@ -24,12 +24,11 @@ export function dragNode(event) {
 }
 
 export function createNode(x, y) {
-    var newId = "q0";
+    var i = 0;
     for (const id in document.nodes) {
-        if (id.substr(1) >= newId.substr(1)) {
-            newId = "q" + (Number(id.substr(1)) + 1);
-        }
+        if (id === "q" + i) i++;
     }
+    var newId = "q" + i;
     document.nodes[newId] = { x: x, y: y, connections: {} }
     document.update();
     return newId;
