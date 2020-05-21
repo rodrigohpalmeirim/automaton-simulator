@@ -1,9 +1,8 @@
 fix connections replaced when new one created with same value
 fix pressing J toggles pane when writing text
-fix short arrows when nodes are too close
 fix editing while running
 fix tape reset when invalid json string
-fix 1 character node names
+add fallback font
 add speed controls
 add initial node control and display
 add import and export
