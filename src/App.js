@@ -33,6 +33,7 @@ export default class App extends Component {
     document.showPane = window.innerWidth > 1000;
     document.firstTapePos = 0;
     document.lastTapePos = 0;
+    document.selectedConnectionChar = "temp";
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
@@ -66,10 +67,14 @@ export default class App extends Component {
     document.addEventListener("mouseup", () => {
       document.removeEventListener("mousemove", dragTape)
     });
+    document.addEventListener("mousedown", this.mouseDownHandler);
+    document.addEventListener("mouseup", this.mouseUpHandler);
+    document.addEventListener("contextmenu", this.contextMenuHandler);
   }
 
   mouseDownHandler(event) {
-    document.showContextMenu = false;
+    if (event.target.parentElement.id !== "context-menu")
+      document.showContextMenu = false;
     if (document.editingConnection && event.target.className !== "connection-input" && event.target.id !== "connection-box") {
       if (applyConnectionChanges()) {
         document.editingConnection = false;
@@ -102,6 +107,7 @@ export default class App extends Component {
     document.draggingNode = false;
     document.draggingArrow = false;
     document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
+    document.update();
   }
 
   keyDownHandler(event) {
@@ -121,26 +127,33 @@ export default class App extends Component {
   }
 
   contextMenuHandler(event) {
-    event.preventDefault();
-    document.showContextMenu = true;
     document.contextMenu = {
       x: event.pageX,
-      y: event.pageY
+      y: event.pageY,
+      options: []
     }
-    if (event.target.tagName === "svg") { // Background
-      document.contextMenu.options = [
-        <p key="0" onClick={() => { createNode(document.contextMenu.x, document.contextMenu.y) }}>Add node</p>
-      ];
-    } else if (document.selectedConnectionChar !== "temp") { // Connection
-      document.contextMenu.options = [
-        <p key="0" onClick={() => { editConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Edit connection</p>,
-        <p key="1" onClick={() => { removeConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Remove connection</p>
-      ];
-    } else { // Node
-      document.contextMenu.options = [
-        <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>
-      ];
-    }
+    try {
+      if (event.target.tagName === "svg") { // Background
+        event.preventDefault();
+        document.showContextMenu = true;
+        document.contextMenu.options = [
+          <p key="0" onClick={() => { createNode(document.contextMenu.x, document.contextMenu.y) }}>Add node</p>
+        ];
+      } else if (document.selectedConnectionChar !== "temp") { // Connection
+        event.preventDefault();
+        document.showContextMenu = true;
+        document.contextMenu.options = [
+          <p key="0" onClick={() => { editConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Edit connection</p>,
+          <p key="1" onClick={() => { removeConnection(document.selectedNodeId, document.selectedConnectionChar) }}>Remove connection</p>
+        ];
+      } else if (event.target.parentElement.getAttribute("type") === "node") { // Node
+        event.preventDefault();
+        document.showContextMenu = true;
+        document.contextMenu.options = [
+          <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>
+        ];
+      }
+    } catch (e) { }
     document.update();
   }
 
@@ -193,7 +206,7 @@ export default class App extends Component {
       html = (
         <div className="App">
           <header className="App-header">
-            <svg style={{ height: "100%", width: "100%", position: "absolute" }} onMouseDown={this.mouseDownHandler} onMouseUp={this.mouseUpHandler} onContextMenu={this.contextMenuHandler}>
+            <svg style={{ height: "100%", width: "100%", position: "absolute" }}>
               {Object.keys(document.nodes).map((id) => {
                 return Object.keys(document.nodes[id].connections).map((char, key) => {
                   if (
