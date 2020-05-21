@@ -48,7 +48,7 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
                         onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", dragLabel) }}
                     >
                         <rect x={((sx + ex) / 2 + cpx) / 2 - 27} y={((sy + ey) / 2 + cpy) / 2 - 10} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-                        <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
+                        <text x={((sx + ex) / 2 + cpx) / 2 - 23} y={((sy + ey) / 2 + cpy) / 2 + 5} fontSize="15" fontFamily="mononokiRegular" fill="#2E3440" xmlSpace="preserve">{text}</text>
                     </g>
                 )}
             </g>
@@ -95,7 +95,7 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
                         onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", dragLabel) }}
                     >
                         <rect x={x1 - 7} y={y1 - 73 + 23 * sign + curve} height="20" width="54" rx="5" ry="5" fill="#88C0D0" />
-                        <text x={x1 - 3} y={y1 - 58 + 23 * sign + curve} fontSize="15" fontFamily="monospace" fill="#2E3440" xmlSpace="preserve">{text}</text>
+                        <text x={x1 - 3} y={y1 - 58 + 23 * sign + curve} fontSize="15" fontFamily="mononokiRegular" fill="#2E3440" xmlSpace="preserve">{text}</text>
                     </g>
                 )}
             </g>

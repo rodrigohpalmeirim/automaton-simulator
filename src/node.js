@@ -12,8 +12,8 @@ export function renderNode(id) {
             document.selectedConnectionChar = "temp";
         }}>
             <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill="#88C0D0" />
-            {id.length === 2 ? <text x={document.nodes[id].x - 12} y={document.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text> :
-                <text x={document.nodes[id].x - 18} y={document.nodes[id].y + 6} fontSize="20" fontFamily="monospace" fill="#2E3440">{id}</text>
+            {id.length === 2 ? <text x={document.nodes[id].x - 12} y={document.nodes[id].y + 6} fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text> :
+                <text x={document.nodes[id].x - 18} y={document.nodes[id].y + 6} fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text>
             }
         </g>
     );
