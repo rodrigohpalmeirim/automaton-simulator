@@ -1,3 +1,5 @@
+fix tooltip pos
+fix changes canceled if invalid in free edit mode
 check performance
 add fallback font
 add speed controls
@@ -5,7 +7,6 @@ add initial node control and display
 add import and export
 add localStorage saving
 add json pane toggle button
-add JSON free editing mode
 add instructions
 add undo/redo
 add panning
