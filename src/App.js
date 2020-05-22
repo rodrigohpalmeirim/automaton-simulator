@@ -123,6 +123,11 @@ export default class App extends Component {
       }
     }
 
+    if (document.freeEdit && event.key === "Escape") {
+      document.freeEdit = false;
+      document.update();
+    }
+
     if (event.key === "j" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
       document.showPane = !document.showPane;
       document.freeEdit = false;
@@ -298,7 +303,7 @@ export default class App extends Component {
                 <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
               </form>
             )}
-            <div id="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
+            <div className="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
             <div id="json-pane" style={{
               height: window.innerHeight - document.tapeHeight - 200,
               right: document.showPane ? 20 : -400,
@@ -335,7 +340,7 @@ export default class App extends Component {
               </div>
               <textarea id="json" onInput={() => { if (!document.freeEdit) this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
             </div>
-            <div id="blocker" style={{ opacity: 0, pointerEvents: document.running ? "auto" : "none" }} />
+            <div className="blocker" style={{ opacity: 0, pointerEvents: document.running ? "auto" : "none" }} />
             {document.running && (
               <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => stop()}>
                 <svg width="100%" height="100%">
