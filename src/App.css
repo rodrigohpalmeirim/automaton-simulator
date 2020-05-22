@@ -105,7 +105,7 @@
   padding: 20px;
   overflow-x: hidden;
   width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 80px);
   background-color: transparent;
   border: none;
   -ms-overflow-style: none;
@@ -115,6 +115,63 @@
 }
 #json:focus {
   outline-width: 0;
+}
+
+.toolbar {
+  height: 40px;
+  width: 100%;
+  background-color: #434C5E;
+  border-radius: 10px 10px 0px 0px;
+  font-size: 20px;
+  line-height: 40px;
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+}
+
+.toolbar-button {
+  height: 40px;
+  width: 40px;
+  border-radius: 10px;
+  color: #D8DEE9;
+  transition: 0.1s;
+  cursor: pointer;
+  opacity: 0.5;
+}
+.toolbar-button:hover {
+  opacity: 1;
+}
+
+.toolbar-button .tooltip {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: normal;
+  visibility: hidden;
+  background-color: #4C566A;
+  text-align: center;
+  padding: 5px;
+  border-radius: 6px;
+  position: absolute;
+  top: -35px;
+  margin-left: -40px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  pointer-events: none;
+  transform: translate(calc(-50% + 28.5px));
+}
+.toolbar-button .tooltip::after { /* Tooltip arrow */
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #4C566A transparent transparent transparent;
+}
+.toolbar-button:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }
 
 .button {

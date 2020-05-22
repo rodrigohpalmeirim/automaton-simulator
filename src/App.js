@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronRight, faCopy, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
@@ -10,7 +12,7 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
-    document.update = () => { this.updateJSON(); this.forceUpdate(); }
+    document.update = () => { this.forceUpdate(); }
     this.mouseUpHandler = this.mouseUpHandler.bind(this);
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
@@ -34,6 +36,7 @@ export default class App extends Component {
     document.firstTapePos = 0;
     document.lastTapePos = 0;
     document.selectedConnectionChar = "temp";
+    document.quickEdit = true;
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
@@ -161,9 +164,9 @@ export default class App extends Component {
     try {
       json = JSON.parse(json);
       if (typeof json["startState"] !== "string" ||
-          typeof json["tape"]["string"] !== "string" ||
-          typeof json["tape"]["startPos"] !== "number") {
-            throw TypeError;
+        typeof json["tape"]["string"] !== "string" ||
+        typeof json["tape"]["startPos"] !== "number") {
+        throw TypeError;
       }
       document.startState = json["startState"];
       document.nodes = json["nodes"];
@@ -249,7 +252,7 @@ export default class App extends Component {
                     return (<input key={id} num={id} style={{
                       height: document.tapeHeight,
                       width: document.tapeHeight,
-                      backgroundColor: id % 2 ? "#4C566A" : "#3B4252",
+                      backgroundColor: id % 2 ? "#434C5E" : "#3B4252",
                       position: "absolute",
                       bottom: 0,
                       left: id * document.tapeHeight + document.tapePos,
@@ -290,9 +293,34 @@ export default class App extends Component {
             }
             <div id="json-pane" style={{
               height: window.innerHeight - document.tapeHeight - 200,
-              right: document.showPane ? 20 : -380,
+              right: document.showPane ? 20 : -400,
             }}>
+              <div className="toolbar">
+                <div className="toolbar-button" onClick={() => { document.showPane = false; document.update(); }}>
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+                <span style={{ flexGrow: 1 }}>JSON</span>
+                {document.quickEdit ?
+                  <div className="toolbar-button" onClick={() => { document.quickEdit = false; document.update(); }}>
+                    <FontAwesomeIcon icon={faToggleOn} />
+                    <span className="tooltip">Quick edit</span>
+                  </div> :
+                  <div className="toolbar-button" onClick={() => { document.quickEdit = true; document.update(); }}>
+                    <FontAwesomeIcon icon={faToggleOff} />
+                    <span className="tooltip">Quick edit</span>
+                  </div>
+                }
+                <div className="toolbar-button" onClick={() => {
+                  document.getElementById("json").select();
+                  document.execCommand("copy");
+                  window.getSelection().removeAllRanges();
+                }}>
+                  <FontAwesomeIcon icon={faCopy} />
+                  <span className="tooltip">Copy</span>
+                </div>
+              </div>
               <textarea id="json" onInput={() => { this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
+              {!document.quickEdit && <span style={{ fontSize: 15, opacity: 0.5 }}>Press ctrl+s to apply changes</span>}
             </div>
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
