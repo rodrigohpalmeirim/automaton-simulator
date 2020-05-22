@@ -4,6 +4,7 @@ var interval;
 
 export function run() {
     if (document.nodes[document.startState]) {
+        document.state = document.startState;
         document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
         updateTape();
         document.update();

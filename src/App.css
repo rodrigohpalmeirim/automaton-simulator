@@ -125,6 +125,18 @@
   outline-width: 0;
 }
 
+.topbar {
+  position: absolute;
+  top: 0px;
+  height: 50px;
+  width: 100%;
+  font-size: 30px;
+  line-height: 50px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
 .toolbar {
   height: 40px;
   width: 100%;
@@ -132,8 +144,8 @@
   border-radius: 10px 10px 0px 0px;
   font-size: 20px;
   line-height: 40px;
-  flex-direction: row;
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
 }
 

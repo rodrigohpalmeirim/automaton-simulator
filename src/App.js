@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
 import { updateTape, dragTape, tapeMouseDownHandler } from './tape';
 import { createConnection, editConnection, applyConnectionChanges, cancelConnection, removeConnection } from './connection';
 import { run, stop } from './simulation';
+import { parseJSON, updateJSON } from './json'
+import { upload, download } from './file'
 export default class App extends Component {
 
   constructor(props) {
@@ -75,7 +77,7 @@ export default class App extends Component {
     document.addEventListener("contextmenu", this.contextMenuHandler);
 
     if (window.localStorage.getItem("json"))
-      this.parseJSON(window.localStorage.getItem("json"));
+      parseJSON(window.localStorage.getItem("json"));
   }
 
   mouseDownHandler(event) {
@@ -140,7 +142,7 @@ export default class App extends Component {
     if (event.ctrlKey && event.key === "s") {
       event.preventDefault();
       document.freeEdit = false;
-      this.parseJSON(document.getElementById("json").value);
+      parseJSON(document.getElementById("json").value);
     }
   }
 
@@ -173,53 +175,6 @@ export default class App extends Component {
       }
     } catch (e) { }
     document.update();
-  }
-
-  parseJSON(json) {
-    try {
-      json = JSON.parse(json);
-      if (typeof json["startState"] !== "string" ||
-        typeof json["tape"]["string"] !== "string" ||
-        typeof json["tape"]["startPos"] !== "number") {
-        throw TypeError;
-      }
-      document.startState = json["startState"];
-      document.nodes = json["nodes"];
-      document.initChars = {};
-      document.firstKey = -json["tape"]["startPos"];
-      document.firstTapePos = document.firstKey;
-      for (var i = 0; i < json["tape"]["string"].length; i++) {
-        document.initChars[i + document.firstTapePos] = json["tape"]["string"][i] === " " ? "" : json["tape"]["string"][i];
-      }
-      document.lastKey = i - 1 + document.firstTapePos;
-      document.lastTapePos = document.lastKey;
-      document.startCharId = 0;
-      document.focusedCharId = document.startCharId;
-      updateTape();
-      for (const input of document.querySelectorAll("#tape input")) {
-        input.value = document.initChars[input.getAttribute("num")];
-      }
-    } catch (e) {
-      this.parseJSON(window.localStorage.getItem("json"));
-    }
-    document.update();
-  }
-
-  updateJSON() {
-    var tape = "";
-    for (var i = document.firstTapePos; i <= document.lastTapePos; i++) {
-      tape += document.initChars[i] === "" ? " " : document.initChars[i];
-    }
-    const json = JSON.stringify({
-      startState: document.startState,
-      nodes: document.nodes,
-      tape: { string: tape, startPos: -document.firstTapePos + document.startCharId }
-    }, null, 2);
-    try {
-      if (!document.freeEdit)
-        document.getElementById("json").value = json;
-    } catch (e) { }
-    return json;
   }
 
   render() {
@@ -261,6 +216,15 @@ export default class App extends Component {
               {document.draggingArrow && renderArrow("user", "", "", document.arrowPos.x1, document.arrowPos.y1, document.arrowPos.x2, document.arrowPos.y2)}
               {Object.keys(document.nodes).map((id) => renderNode(id))}
             </svg>
+            <div className="topbar">
+              <div className="toolbar-button" style={{ width: 50, height: 50 }}>
+                <input type="file" text="" style={{ position: "absolute", width: 50, height: 50, marginLeft: -10, opacity: 0, cursor: "pointer" }} onChange={(event) => { upload(event) }} />
+                <FontAwesomeIcon icon={faUpload} />
+              </div>
+              <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => download()}>
+                <FontAwesomeIcon icon={faDownload} />
+              </div>
+            </div>
             <div id="tape" style={{ height: document.tapeHeight }} onMouseDown={tapeMouseDownHandler}>
               {
                 Object.keys(document.initChars).map((id) => {
@@ -280,7 +244,7 @@ export default class App extends Component {
                       document.initChars[id] = event.target.value;
                       document.firstTapePos = Math.min(id, document.firstTapePos);
                       document.lastTapePos = Math.max(id, document.lastTapePos);
-                      this.updateJSON();
+                      updateJSON();
                     }} defaultValue={document.running ? document.chars[id] : document.initChars[id]} />
                     )
                   }
@@ -327,7 +291,7 @@ export default class App extends Component {
                   </div>
                 }
                 {document.freeEdit ?
-                  <div className="toolbar-button" onClick={() => { document.freeEdit = false; this.parseJSON(document.getElementById("json").value); }}>
+                  <div className="toolbar-button" onClick={() => { document.freeEdit = false; parseJSON(document.getElementById("json").value); }}>
                     <FontAwesomeIcon icon={faCheck} />
                     <span className="tooltip">Apply</span>
                   </div> :
@@ -341,7 +305,7 @@ export default class App extends Component {
                   </div>
                 }
               </div>
-              <textarea id="json" onInput={() => { if (!document.freeEdit) this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
+              <textarea id="json" onInput={() => { if (!document.freeEdit) parseJSON(document.getElementById("json").value) }} defaultValue={updateJSON()} spellCheck="false" />
             </div>
             <div className="blocker" style={{ opacity: 0, pointerEvents: document.running ? "auto" : "none" }} />
             {document.running && (
@@ -361,12 +325,12 @@ export default class App extends Component {
       );
     } catch (e) {
       console.log("DEBUG: " + e);
-      this.parseJSON(window.localStorage.getItem("json"));
+      parseJSON(window.localStorage.getItem("json"));
     }
     return html;
   }
 
   componentDidUpdate() {
-    window.localStorage.setItem("json", this.updateJSON());
+    window.localStorage.setItem("json", updateJSON());
   }
 }

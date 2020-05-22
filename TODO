@@ -4,8 +4,6 @@ check performance
 add fallback font
 add speed controls
 add initial node control and display
-add import and export
-add localStorage saving
 add json pane toggle button
 add instructions
 add undo/redo
