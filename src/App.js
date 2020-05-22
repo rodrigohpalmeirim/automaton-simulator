@@ -321,7 +321,7 @@ export default class App extends Component {
                 {document.freeEdit ?
                   <div className="toolbar-button" onClick={() => { document.freeEdit = false; this.parseJSON(document.getElementById("json").value); }}>
                     <FontAwesomeIcon icon={faCheck} />
-                    <span className="tooltip">Apply changes</span>
+                    <span className="tooltip">Apply</span>
                   </div> :
                   <div className="toolbar-button" onClick={() => {
                     document.getElementById("json").select();
