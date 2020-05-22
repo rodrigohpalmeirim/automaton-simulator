@@ -87,6 +87,14 @@
   pointer-events: none;
 }
 
+#blocker {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-color: black;
+  transition: 0.3s;
+}
+
 #json-pane {
   position: absolute;
   background-color: #3B4252;

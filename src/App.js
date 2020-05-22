@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faCopy, faToggleOn, faToggleOff } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
@@ -36,7 +36,7 @@ export default class App extends Component {
     document.firstTapePos = 0;
     document.lastTapePos = 0;
     document.selectedConnectionChar = "temp";
-    document.quickEdit = true;
+    document.freeEdit = false;
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
@@ -125,7 +125,14 @@ export default class App extends Component {
 
     if (event.key === "j" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
       document.showPane = !document.showPane;
+      document.freeEdit = false;
       document.update();
+    }
+
+    if (event.ctrlKey && event.key === "s") {
+      event.preventDefault();
+      document.freeEdit = false;
+      this.parseJSON(document.getElementById("json").value);
     }
   }
 
@@ -201,7 +208,8 @@ export default class App extends Component {
       tape: { string: tape, startPos: -document.firstTapePos + document.startCharId }
     }, null, 2);
     try {
-      document.getElementById("json").value = json;
+      if (!document.freeEdit)
+        document.getElementById("json").value = json;
     } catch (e) { }
     return json;
   }
@@ -277,55 +285,63 @@ export default class App extends Component {
                 transition: document.running ? ".5s" : "0s",
               }} />
             </div>
-            {document.running ? (
-              <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => stop()}>
+            {!document.running && (
+              <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => run()}>
                 <svg width="100%" height="100%">
-                  <polygon points={"12,12 28,12 28,28 12,28"} fill="#2E3440" />
+                  <polygon points={"12,10 30,20 12,30"} fill="#2E3440" />
                 </svg>
               </div>
-            ) : (
-                <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => run()}>
-                  <svg width="100%" height="100%">
-                    <polygon points={"12,10 30,20 12,30"} fill="#2E3440" />
-                  </svg>
-                </div>
-              )
+            )
             }
+            {document.editingConnection && (
+              <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
+                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
+              </form>
+            )}
+            <div id="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
             <div id="json-pane" style={{
               height: window.innerHeight - document.tapeHeight - 200,
               right: document.showPane ? 20 : -400,
             }}>
               <div className="toolbar">
-                <div className="toolbar-button" onClick={() => { document.showPane = false; document.update(); }}>
+                <div className="toolbar-button" onClick={() => { document.showPane = false; document.freeEdit = false; document.update(); }}>
                   <FontAwesomeIcon icon={faChevronRight} />
                 </div>
                 <span style={{ flexGrow: 1 }}>JSON</span>
-                {document.quickEdit ?
-                  <div className="toolbar-button" onClick={() => { document.quickEdit = false; document.update(); }}>
-                    <FontAwesomeIcon icon={faToggleOn} />
-                    <span className="tooltip">Quick edit</span>
+                {document.freeEdit ?
+                  <div className="toolbar-button" onClick={() => { document.freeEdit = false; document.update(); }}>
+                    <FontAwesomeIcon icon={faTimes} />
+                    <span className="tooltip">Cancel</span>
                   </div> :
-                  <div className="toolbar-button" onClick={() => { document.quickEdit = true; document.update(); }}>
-                    <FontAwesomeIcon icon={faToggleOff} />
-                    <span className="tooltip">Quick edit</span>
+                  <div className="toolbar-button" onClick={() => { document.freeEdit = true; document.update(); }}>
+                    <FontAwesomeIcon icon={faPencilAlt} />
+                    <span className="tooltip">Free edit</span>
                   </div>
                 }
-                <div className="toolbar-button" onClick={() => {
-                  document.getElementById("json").select();
-                  document.execCommand("copy");
-                  window.getSelection().removeAllRanges();
-                }}>
-                  <FontAwesomeIcon icon={faCopy} />
-                  <span className="tooltip">Copy</span>
-                </div>
+                {document.freeEdit ?
+                  <div className="toolbar-button" onClick={() => { document.freeEdit = false; this.parseJSON(document.getElementById("json").value); }}>
+                    <FontAwesomeIcon icon={faCheck} />
+                    <span className="tooltip">Apply changes</span>
+                  </div> :
+                  <div className="toolbar-button" onClick={() => {
+                    document.getElementById("json").select();
+                    document.execCommand("copy");
+                    window.getSelection().removeAllRanges();
+                  }}>
+                    <FontAwesomeIcon icon={faCopy} />
+                    <span className="tooltip">Copy</span>
+                  </div>
+                }
               </div>
-              <textarea id="json" onInput={() => { this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
-              {!document.quickEdit && <span style={{ fontSize: 15, opacity: 0.5 }}>Press ctrl+s to apply changes</span>}
+              <textarea id="json" onInput={() => { if (!document.freeEdit) this.parseJSON(document.getElementById("json").value) }} defaultValue={this.updateJSON()} spellCheck="false" />
             </div>
-            {document.editingConnection && (
-              <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
-                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
-              </form>
+            <div id="blocker" style={{ opacity: 0, pointerEvents: document.running ? "auto" : "none" }} />
+            {document.running && (
+              <div className="button" style={{ bottom: document.tapeHeight + 20 }} onClick={() => stop()}>
+                <svg width="100%" height="100%">
+                  <polygon points={"12,12 28,12 28,28 12,28"} fill="#2E3440" />
+                </svg>
+              </div>
             )}
             {document.showContextMenu && (
               <div style={{ left: document.contextMenu.x, top: document.contextMenu.y }} id="context-menu" onClick={() => { document.showContextMenu = false; document.update(); }}>
