@@ -73,6 +73,9 @@ export default class App extends Component {
     document.addEventListener("mousedown", this.mouseDownHandler);
     document.addEventListener("mouseup", this.mouseUpHandler);
     document.addEventListener("contextmenu", this.contextMenuHandler);
+
+    if (window.localStorage.getItem("json"))
+      this.parseJSON(window.localStorage.getItem("json"));
   }
 
   mouseDownHandler(event) {
@@ -197,7 +200,7 @@ export default class App extends Component {
         input.value = document.initChars[input.getAttribute("num")];
       }
     } catch (e) {
-      this.parseJSON(document.json);
+      this.parseJSON(window.localStorage.getItem("json"));
     }
     document.update();
   }
@@ -358,12 +361,12 @@ export default class App extends Component {
       );
     } catch (e) {
       console.log("DEBUG: " + e);
-      this.parseJSON(document.json);
+      this.parseJSON(window.localStorage.getItem("json"));
     }
     return html;
   }
 
   componentDidUpdate() {
-    document.json = this.updateJSON();
+    window.localStorage.setItem("json", this.updateJSON());
   }
 }
