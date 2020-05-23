@@ -159,7 +159,7 @@ export default class App extends Component {
         document.contextMenu.options = [
           <p key="0" onClick={() => { createNode(document.contextMenu.x, document.contextMenu.y) }}>Add node</p>
         ];
-      } else if (document.selectedConnectionChar !== "temp") { // Connection
+      } else if (event.target.parentElement.getAttribute("type") === "arrow") { // Connection
         event.preventDefault();
         document.showContextMenu = true;
         document.contextMenu.options = [

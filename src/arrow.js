@@ -31,7 +31,7 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
         }
 
         return (
-            <g key={key} onMouseDown={() => {
+            <g key={key} type="arrow" onMouseDown={() => {
                 document.selectedNodeId = nodeId;
                 document.selectedConnectionChar = char;
             }}>
@@ -45,7 +45,7 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
                     fill="#88C0D0"
                 />
                 {text && (
-                    <g
+                    <g type="arrow"
                         onDoubleClick={() => { editConnection(nodeId, char) }}
                         onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", dragLabel) }}
                     >
@@ -85,14 +85,14 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
         }
 
         return (
-            <g key={key} onMouseDown={() => {
+            <g key={key} type="arrow" onMouseDown={() => {
                 document.selectedNodeId = nodeId;
                 document.selectedConnectionChar = char;
             }}>
                 <path d={`M ${x1 - 4} ${y1 - 8 * sign} C ${cx1},${cy1} ${cx2},${cy2} ${x2} ${y2}`} style={{ stroke: "#88C0D0", strokeWidth: 5, pointerEvents: "none" }} fill="transparent" />
                 <polygon points={`${x1},${y1} ${x1 - 13.5},${y1 - 11.9 * sign} ${x1 + 5.78},${y1 - 17.1 * sign}`} fill="#88C0D0" />
                 {text && (
-                    <g
+                    <g type="arrow"
                         onDoubleClick={() => { editConnection(nodeId, char) }}
                         onMouseDown={(event) => { if (event.button === 0) document.addEventListener("mousemove", dragLabel) }}
                     >
