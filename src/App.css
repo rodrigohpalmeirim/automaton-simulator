@@ -198,6 +198,14 @@
   opacity: 1;
 }
 
+.topbar .tooltip {
+  transform: translate(calc(-50% - 15px), 200%);
+}
+.topbar .tooltip::after { /* Tooltip arrow */
+  top: -10px;
+  border-color: transparent transparent #4C566A transparent;
+}
+
 .button {
   position: absolute;
   height: 40px;

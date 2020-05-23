@@ -1,4 +1,4 @@
-add upload and download tooltips
+fix "Download" tooltip crop
 fix changes canceled if invalid in free edit mode
 check performance
 add fallback font

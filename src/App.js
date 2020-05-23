@@ -220,9 +220,11 @@ export default class App extends Component {
               <div className="toolbar-button" style={{ width: 50, height: 50 }}>
                 <input type="file" text="" style={{ position: "absolute", width: 50, height: 50, marginLeft: -10, opacity: 0, cursor: "pointer" }} onChange={(event) => { upload(event) }} />
                 <FontAwesomeIcon icon={faUpload} />
+                <span className="tooltip">Upload</span>
               </div>
               <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => download()}>
                 <FontAwesomeIcon icon={faDownload} />
+                <span className="tooltip">Download</span>
               </div>
             </div>
             <div id="tape" style={{ height: document.tapeHeight }} onMouseDown={tapeMouseDownHandler}>
