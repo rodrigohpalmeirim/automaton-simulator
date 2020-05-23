@@ -35,12 +35,14 @@ export default class App extends Component {
     document.focusedCharId = document.startCharId;
     document.state = document.startState;
     document.running = false;
-    document.showPane = window.innerWidth > 1000;
     document.firstTapePos = 0;
     document.lastTapePos = 0;
     document.selectedConnectionChar = "temp";
     document.freeEdit = false;
     document.speed = 1;
+
+    if (!window.localStorage.getItem("pane"))
+      window.localStorage.setItem("pane", window.innerWidth > 1000 ? "show" : "hide");
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
@@ -67,7 +69,7 @@ export default class App extends Component {
     window.addEventListener("resize", () => {
       document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
       if (window.innerWidth < 1000)
-        document.showPane = false;
+        window.localStorage.setItem("pane", "hide");
       updateTape();
       document.update();
     });
@@ -136,7 +138,7 @@ export default class App extends Component {
     }
 
     if (event.key === "j" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-      document.showPane = !document.showPane;
+      window.localStorage.setItem("pane", window.localStorage.getItem("pane") === "show" ? "hide" : "show");
       document.freeEdit = false;
       document.update();
     }
@@ -294,14 +296,14 @@ export default class App extends Component {
             <div className="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
             <div id="json-pane" style={{
               height: window.innerHeight - document.tapeHeight - 200,
-              right: document.showPane ? 20 : -360,
+              right: window.localStorage.getItem("pane") === "show" ? 20 : -360,
             }}>
               <div className="toolbar">
-                {document.showPane ?
-                  <div className="toolbar-button" onClick={() => { document.showPane = false; document.freeEdit = false; document.update(); }}>
+                {window.localStorage.getItem("pane") === "show" ?
+                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("pane", "hide"); document.freeEdit = false; document.update(); }}>
                     <FontAwesomeIcon icon={faChevronRight} />
                   </div> :
-                  <div className="toolbar-button" onClick={() => { document.showPane = true;  document.update(); }}>
+                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("pane", "show");  document.update(); }}>
                     <FontAwesomeIcon icon={faChevronLeft} />
                   </div>
                 }
