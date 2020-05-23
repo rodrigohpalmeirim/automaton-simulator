@@ -1,5 +1,4 @@
 fix "Download" tooltip crop
-fix changes canceled if invalid in free edit mode
 check performance
 add speed controls
 add initial node control and display

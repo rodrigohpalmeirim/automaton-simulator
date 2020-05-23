@@ -171,7 +171,8 @@ export default class App extends Component {
         event.preventDefault();
         document.showContextMenu = true;
         document.contextMenu.options = [
-          <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>
+          <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>,
+          <p key="1" onClick={() => { document.startState = document.state = document.selectedNodeId }}>Define as start state</p>
         ];
       }
     } catch (e) { }
