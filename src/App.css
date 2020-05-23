@@ -52,6 +52,7 @@
 }
 
 #context-menu p {
+  white-space: nowrap;
   margin: 0px;
   padding: 5px;
   border-radius: 5px;
@@ -162,21 +163,25 @@
   opacity: 1;
 }
 
+.toolbar-button svg {
+  min-width: 20px;
+}
+
 .toolbar-button .tooltip {
   font-size: 15px;
   font-weight: bold;
   line-height: normal;
+  white-space: nowrap;
   visibility: hidden;
   background-color: #4C566A;
   text-align: center;
   padding: 5px;
-  border-radius: 6px;
+  border-radius: 5px;
   position: absolute;
-  margin-left: -500px;
   opacity: 0;
   transition: opacity 0.1s;
   pointer-events: none;
-  transform: translate(calc(-50% + 488.5px), calc(-100% - 10px));
+  transform: translate(calc(-50% - 10px), calc(-100% - 10px));
 }
 .toolbar-button .tooltip::after { /* Tooltip arrow */
   content: "";

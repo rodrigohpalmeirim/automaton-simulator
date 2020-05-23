@@ -1,10 +1,11 @@
-fix tooltip pos
+add upload and download tooltips
 fix changes canceled if invalid in free edit mode
 check performance
 add fallback font
 add speed controls
 add initial node control and display
 add json pane toggle button
+add drag and drop to upload
 add instructions
 add undo/redo
 add panning
