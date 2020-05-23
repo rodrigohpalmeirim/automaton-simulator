@@ -9,6 +9,7 @@ export function parseJSON(json) {
             throw TypeError;
         }
         document.startState = json["startState"];
+        document.state = document.startState;
         document.nodes = json["nodes"];
         document.initChars = {};
         document.firstKey = -json["tape"]["startPos"];

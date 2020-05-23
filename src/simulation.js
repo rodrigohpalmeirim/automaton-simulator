@@ -27,8 +27,8 @@ export function run() {
                     }
                     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
                     updateTape();
-                    document.update();
                     document.state = connection.node;
+                    document.update();
                     break;
                 }
             }

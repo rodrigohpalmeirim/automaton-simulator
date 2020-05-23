@@ -26,6 +26,7 @@ export default class App extends Component {
     document.contextMenu = { x: 0, y: 0, options: [] }
     document.startCharId = 0;
     document.startState = "q0";
+    document.state = "q0";
     document.tapeHeight = 100;
     document.draggingNode = false;
     document.draggingArrow = false;

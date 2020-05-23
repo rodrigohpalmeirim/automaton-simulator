@@ -11,7 +11,7 @@ export function renderNode(id) {
             document.selectedNodeId = id;
             document.selectedConnectionChar = "temp";
         }}>
-            <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill="#88C0D0" />
+            <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill={ document.state === id ? "#E5E9F0" : "#88C0D0"} />
             <text x={document.nodes[id].x} y={document.nodes[id].y + 6} textAnchor="middle" fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text>
         </g>
     );
