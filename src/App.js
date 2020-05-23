@@ -6,7 +6,7 @@ import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } fr
 import { renderArrow, dragArrow, dragLabel } from './arrow';
 import { updateTape, dragTape, tapeMouseDownHandler } from './tape';
 import { createConnection, editConnection, applyConnectionChanges, cancelConnection, removeConnection } from './connection';
-import { run, stop } from './simulation';
+import { run, stop, changeSpeed } from './simulation';
 import { parseJSON, updateJSON } from './json'
 import { upload, download } from './file'
 export default class App extends Component {
@@ -40,6 +40,7 @@ export default class App extends Component {
     document.lastTapePos = 0;
     document.selectedConnectionChar = "temp";
     document.freeEdit = false;
+    document.speed = 1;
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
@@ -241,7 +242,7 @@ export default class App extends Component {
                       bottom: 0,
                       left: id * document.tapeHeight + document.tapePos,
                       fontSize: document.tapeHeight / 2,
-                      transition: document.running ? ".5s" : "0s",
+                      transition: document.running ? 0.5 / document.speed + "s" : 0 + "s",
                     }} maxLength="1" onInput={(event) => {
                       if (event.target.value === " ")
                         event.target.value = "␣";
@@ -267,8 +268,14 @@ export default class App extends Component {
                   <polygon points={"12,10 30,20 12,30"} fill="#2E3440" />
                 </svg>
               </div>
-            )
-            }
+            )}
+            <div id="speed-controls" style={{ bottom: document.tapeHeight + 20, zIndex: document.running ? 2 : 0 }}>
+              <div style={document.speed === 0.5 ? { backgroundColor: "#88C0D0", color: "#2E3440" } : {}} onClick={() => { changeSpeed(0.5); }}>×½</div>
+              <div style={document.speed === 1 ? { backgroundColor: "#88C0D0", color: "#2E3440" } : {}} onClick={() => { changeSpeed(1); }}>×1</div>
+              <div style={document.speed === 2 ? { backgroundColor: "#88C0D0", color: "#2E3440" } : {}} onClick={() => { changeSpeed(2); }}>×2</div>
+              <div style={document.speed === 5 ? { backgroundColor: "#88C0D0", color: "#2E3440" } : {}} onClick={() => { changeSpeed(5); }}>×5</div>
+              <div style={document.speed === Infinity ? { backgroundColor: "#88C0D0", color: "#2E3440" } : {}} onClick={() => { changeSpeed(Infinity); }}>×∞</div>
+            </div>
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
                 <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />

@@ -1,9 +1,9 @@
 check performance
-add speed controls
-add initial node control and display
 add json pane toggle button
-add drag and drop to upload
+add simulation hotkeys
+add examples
 add instructions
+add drag and drop to upload
 add undo/redo
 add panning
 add node renaming

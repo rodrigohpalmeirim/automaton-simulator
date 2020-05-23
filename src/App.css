@@ -229,3 +229,24 @@
   transform: scale(1);
   box-shadow: none;
 }
+
+#speed-controls {
+  position: absolute;
+  right: 20px;
+  background-color: #3B4252;
+  font-size: 20px;
+  line-height: 30px;
+  display: flex;
+  flex-direction: row;
+  border-radius: 5px;
+}
+
+#speed-controls div {
+  width: 30px;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+#speed-controls div:hover {
+  background-color: #434C5E;
+}
