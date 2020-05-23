@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
@@ -221,12 +221,12 @@ export default class App extends Component {
             <div className="topbar">
               <div className="toolbar-button" style={{ width: 50, height: 50 }}>
                 <input type="file" text="" style={{ position: "absolute", width: 50, height: 50, marginLeft: -10, opacity: 0, cursor: "pointer" }} onChange={(event) => { upload(event) }} />
-                <FontAwesomeIcon icon={faUpload} />
+                <FontAwesomeIcon icon={faFileImport} />
                 <span className="tooltip">Import</span>
               </div>
               <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => download()}>
-                <FontAwesomeIcon icon={faDownload} />
-                <span className="tooltip">Export</span>
+                <FontAwesomeIcon icon={faFileExport} />
+                <span className="tooltip" style={{ transform: "translate(calc(-50% - 22px), 200%)" }}>Export</span>
               </div>
             </div>
             <div id="tape" style={{ height: document.tapeHeight }} onMouseDown={tapeMouseDownHandler}>
