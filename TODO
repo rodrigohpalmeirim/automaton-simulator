@@ -1,7 +1,6 @@
 fix "Download" tooltip crop
 fix changes canceled if invalid in free edit mode
 check performance
-add fallback font
 add speed controls
 add initial node control and display
 add json pane toggle button
