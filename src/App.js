@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faChevronLeft, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
@@ -284,12 +284,17 @@ export default class App extends Component {
             <div className="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
             <div id="json-pane" style={{
               height: window.innerHeight - document.tapeHeight - 200,
-              right: document.showPane ? 20 : -400,
+              right: document.showPane ? 20 : -360,
             }}>
               <div className="toolbar">
-                <div className="toolbar-button" onClick={() => { document.showPane = false; document.freeEdit = false; document.update(); }}>
-                  <FontAwesomeIcon icon={faChevronRight} />
-                </div>
+                {document.showPane ?
+                  <div className="toolbar-button" onClick={() => { document.showPane = false; document.freeEdit = false; document.update(); }}>
+                    <FontAwesomeIcon icon={faChevronRight} />
+                  </div> :
+                  <div className="toolbar-button" onClick={() => { document.showPane = true;  document.update(); }}>
+                    <FontAwesomeIcon icon={faChevronLeft} />
+                  </div>
+                }
                 <span style={{ flexGrow: 1 }}>JSON</span>
                 {document.freeEdit ?
                   <div className="toolbar-button" onClick={() => { document.freeEdit = false; document.update(); }}>
