@@ -146,6 +146,16 @@ export default class App extends Component {
       document.freeEdit = false;
       parseJSON(document.getElementById("json").value);
     }
+
+    if (event.key === " ") {
+      if (document.running)
+        stop();
+      else
+        run();
+    }
+
+    if (document.running && event.key === "Escape")
+      stop();
   }
 
   contextMenuHandler(event) {
