@@ -222,7 +222,7 @@ export default class App extends Component {
               <div className="toolbar-button" style={{ width: 50, height: 50 }}>
                 <input type="file" text="" style={{ position: "absolute", width: 50, height: 50, marginLeft: -10, opacity: 0, cursor: "pointer" }} onChange={(event) => { upload(event) }} />
                 <FontAwesomeIcon icon={faFileImport} />
-                <span className="tooltip">Import</span>
+                <span className="tooltip" style={{ transform: "translate(calc(-50% - 10px), 200%)" }}>Import</span>
               </div>
               <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => download()}>
                 <FontAwesomeIcon icon={faFileExport} />
