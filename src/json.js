@@ -1,4 +1,5 @@
 import { updateTape } from './tape';
+import { reset } from './App'
 
 export function parseJSON(json) {
     try {
@@ -26,7 +27,12 @@ export function parseJSON(json) {
             input.value = document.initChars[input.getAttribute("num")];
         }
     } catch (e) {
-        parseJSON(window.localStorage.getItem("json"));
+        if (document.firstUpdate) {
+            window.localStorage.removeItem("json");
+            reset();
+        } else {
+            parseJSON(window.localStorage.getItem("json"));
+        }
     }
     document.update();
 }

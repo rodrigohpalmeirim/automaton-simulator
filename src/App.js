@@ -11,6 +11,51 @@ import { parseJSON, updateJSON } from './json';
 import { upload, download, readFile } from './file';
 import { binaryCounter } from './examples/binary-counter';
 import { bouncer } from './examples/bouncer';
+
+export function reset() {
+  document.tempNode = "";
+  document.startCharId = 0;
+  document.startState = "q0";
+  document.state = "q0";
+  document.draggingNode = false;
+  document.draggingArrow = false;
+  document.editingConnection = false;
+  document.showContextMenu = false;
+  document.focusedCharId = document.startCharId;
+  document.state = document.startState;
+  document.running = false;
+  document.firstTapePos = 0;
+  document.lastTapePos = 0;
+  document.selectedConnectionChar = "temp";
+  document.freeEdit = false;
+  document.speed = 1;
+
+  if (!window.localStorage.getItem("json-pane"))
+    window.localStorage.setItem("json-pane", window.innerWidth > 1000 ? "show" : "hide");
+  if (!window.localStorage.getItem("help-pane"))
+    window.localStorage.setItem("help-pane", "show");
+
+  document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
+
+  document.nodes = {
+    q0: {
+      x: Math.round((window.innerWidth) / 2),
+      y: Math.round((window.innerHeight - document.tapeHeight) / 2),
+      type: "normal",
+      connections: {}
+    }
+  }
+
+  document.initChars = {};
+  document.firstKey = 0;
+  for (var i = Math.floor(-(window.innerWidth / 2) / document.tapeHeight); i < 2 + (window.innerWidth / 2) / document.tapeHeight; i++) {
+    if (document.initChars[i] === undefined)
+      document.initChars[i] = "";
+  }
+  document.lastKey = i - 1;
+  document.chars = {};
+}
+
 export default class App extends Component {
 
   constructor(props) {
@@ -24,48 +69,11 @@ export default class App extends Component {
 
     document.nodeRadius = 25;
     document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
-    document.tempNode = "";
     document.contextMenu = { x: 0, y: 0, options: [] }
-    document.startCharId = 0;
-    document.startState = "q0";
-    document.state = "q0";
     document.tapeHeight = 100;
-    document.draggingNode = false;
-    document.draggingArrow = false;
-    document.editingConnection = false;
-    document.showContextMenu = false;
-    document.focusedCharId = document.startCharId;
-    document.state = document.startState;
-    document.running = false;
-    document.firstTapePos = 0;
-    document.lastTapePos = 0;
-    document.selectedConnectionChar = "temp";
-    document.freeEdit = false;
-    document.speed = 1;
+    document.firstUpdate = true;
 
-    if (!window.localStorage.getItem("json-pane"))
-      window.localStorage.setItem("json-pane", window.innerWidth > 1000 ? "show" : "hide");
-    if (!window.localStorage.getItem("help-pane"))
-      window.localStorage.setItem("help-pane", "show");
-
-    document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
-
-    document.nodes = {
-      q0: {
-        x: Math.round((window.innerWidth) / 2),
-        y: Math.round((window.innerHeight - document.tapeHeight) / 2),
-        connections: {}
-      }
-    }
-
-    document.initChars = {};
-    document.firstKey = 0;
-    for (var i = Math.floor(-(window.innerWidth / 2) / document.tapeHeight); i < 2 + (window.innerWidth / 2) / document.tapeHeight; i++) {
-      if (document.initChars[i] === undefined)
-        document.initChars[i] = "";
-    }
-    document.lastKey = i - 1;
-    document.chars = {};
+    reset();
   }
 
   componentDidMount() {
@@ -412,12 +420,19 @@ export default class App extends Component {
       );
     } catch (e) {
       console.log("DEBUG: " + e);
-      parseJSON(window.localStorage.getItem("json"));
+      if (document.firstUpdate) {
+        window.localStorage.removeItem("json");
+        reset();
+        document.update();
+      } else {
+        parseJSON(window.localStorage.getItem("json"));
+      }
     }
     return html;
   }
 
   componentDidUpdate() {
     window.localStorage.setItem("json", updateJSON());
+    document.firstUpdate = false;
   }
 }
