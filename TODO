@@ -1,8 +1,8 @@
 check performance
+fix crashing on invalid localStorage
 add normal font
 add accepted and rejected states
 add "pause" and "next" buttons
-fix editing connection not populated with current values
 add control tape start pos
 add option to lock tape
 add non-deterministic functionality

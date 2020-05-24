@@ -147,7 +147,7 @@ export default class App extends Component {
         document.freeEdit = false;
         document.update();
       }
-  
+
       if (event.key === "h") {
         window.localStorage.setItem("help-pane", window.localStorage.getItem("help-pane") === "show" ? "hide" : "show");
         document.update();
@@ -159,7 +159,7 @@ export default class App extends Component {
         else
           run();
       }
-  
+
       if (document.running && event.key === "Escape")
         stop();
     }
@@ -306,7 +306,18 @@ export default class App extends Component {
             </div>
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
-                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="newChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
+                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus
+                  onFocus={(event) => {event.target.select();}}
+                  onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
+                  defaultValue={document.selectedConnectionChar}
+                /> → <input className="connection-input" type="text" name="newChar" maxLength="1"
+                  onFocus={(event) => {event.target.select();}}
+                  defaultValue={document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].newChar}
+                  onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
+                />, <input className="connection-input" type="text" name="move" maxLength="1"
+                  onFocus={(event) => {event.target.select();}}
+                  defaultValue={document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].move}
+                />
               </form>
             )}
             <div className="pane" style={{ height: 450, width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
