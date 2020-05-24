@@ -381,11 +381,7 @@ export default class App extends Component {
                     <FontAwesomeIcon icon={faCheck} />
                     <span className="tooltip">Apply</span>
                   </div> :
-                  <div className="toolbar-button" onClick={() => {
-                    document.getElementById("json").select();
-                    document.execCommand("copy");
-                    window.getSelection().removeAllRanges();
-                  }}>
+                  <div className="toolbar-button" onClick={() => { navigator.clipboard.writeText(document.getElementById("json").value)}}>
                     <FontAwesomeIcon icon={faCopy} />
                     <span className="tooltip">Copy</span>
                   </div>

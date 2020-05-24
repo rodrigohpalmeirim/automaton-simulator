@@ -1,6 +1,8 @@
+add copy hotkey
+add tape auto-focus next
 fix crashing on invalid localStorage
 add accepted and rejected states
-add "pause" and "next" buttons
+add "pause" and "step" buttons
 add control tape start pos
 add option to lock tape
 add non-deterministic functionality
