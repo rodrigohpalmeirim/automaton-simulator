@@ -1,23 +1,23 @@
 {
   "files": {
-    "main.css": "/automaton-simulator/static/css/main.1bbd5e63.chunk.css",
-    "main.js": "/automaton-simulator/static/js/main.2b8641ff.chunk.js",
-    "main.js.map": "/automaton-simulator/static/js/main.2b8641ff.chunk.js.map",
+    "main.css": "/automaton-simulator/static/css/main.3be4fb9f.chunk.css",
+    "main.js": "/automaton-simulator/static/js/main.3211cb4a.chunk.js",
+    "main.js.map": "/automaton-simulator/static/js/main.3211cb4a.chunk.js.map",
     "runtime-main.js": "/automaton-simulator/static/js/runtime-main.ee58ba5b.js",
     "runtime-main.js.map": "/automaton-simulator/static/js/runtime-main.ee58ba5b.js.map",
     "static/js/2.606ec056.chunk.js": "/automaton-simulator/static/js/2.606ec056.chunk.js",
     "static/js/2.606ec056.chunk.js.map": "/automaton-simulator/static/js/2.606ec056.chunk.js.map",
     "index.html": "/automaton-simulator/index.html",
-    "precache-manifest.55634d32c6d861113b9cec25232aa6c5.js": "/automaton-simulator/precache-manifest.55634d32c6d861113b9cec25232aa6c5.js",
+    "precache-manifest.27cd5de2acfa80c24ef2b824d68ea0dd.js": "/automaton-simulator/precache-manifest.27cd5de2acfa80c24ef2b824d68ea0dd.js",
     "service-worker.js": "/automaton-simulator/service-worker.js",
-    "static/css/main.1bbd5e63.chunk.css.map": "/automaton-simulator/static/css/main.1bbd5e63.chunk.css.map",
+    "static/css/main.3be4fb9f.chunk.css.map": "/automaton-simulator/static/css/main.3be4fb9f.chunk.css.map",
     "static/js/2.606ec056.chunk.js.LICENSE.txt": "/automaton-simulator/static/js/2.606ec056.chunk.js.LICENSE.txt",
     "static/media/App.css": "/automaton-simulator/static/media/mononoki-regular.4f64643f.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.ee58ba5b.js",
     "static/js/2.606ec056.chunk.js",
-    "static/css/main.1bbd5e63.chunk.css",
-    "static/js/main.2b8641ff.chunk.js"
+    "static/css/main.3be4fb9f.chunk.css",
+    "static/js/main.3211cb4a.chunk.js"
   ]
 }
