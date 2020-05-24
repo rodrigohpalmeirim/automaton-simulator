@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "918aac7f07cd0ba5eba0c39ae9499b1a",
+    "revision": "c7c53175b2a0e70a35115321184eb943",
     "url": "/automaton-simulator/index.html"
   },
   {
-    "revision": "31f7070197135f2c2663",
+    "revision": "ddeac701c6c87a969063",
     "url": "/automaton-simulator/static/css/main.1bbd5e63.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/automaton-simulator/static/js/2.606ec056.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "31f7070197135f2c2663",
-    "url": "/automaton-simulator/static/js/main.a5beb123.chunk.js"
+    "revision": "ddeac701c6c87a969063",
+    "url": "/automaton-simulator/static/js/main.2b8641ff.chunk.js"
   },
   {
     "revision": "225cd87c69db15d2387c",
