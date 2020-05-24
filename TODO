@@ -1,4 +1,3 @@
-change README
 fix crashing on invalid localStorage
 add accepted and rejected states
 add "pause" and "next" buttons
