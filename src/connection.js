@@ -1,7 +1,7 @@
 export function createConnection(endNodeId) {
     document.nodes[document.selectedNodeId].connections["temp"] = {
         node: endNodeId,
-        replaceChar: "",
+        newChar: "",
         move: "S",
         arrowCurve: 0,
     }
@@ -40,16 +40,16 @@ export function editConnection(nodeId, char) {
 }
 
 export function applyConnectionChanges() {
-    const newChar = document.getElementsByClassName("connection-input")[0].value;
-    const replaceChar = document.getElementsByClassName("connection-input")[1].value;
+    const modifiedChar = document.getElementsByClassName("connection-input")[0].value;
+    const newChar = document.getElementsByClassName("connection-input")[1].value;
     const move = document.getElementsByClassName("connection-input")[2].value;
-    if (["L", "R", "S"].includes(move) && !Object.keys(document.nodes[document.editingConnection.node].connections).filter((char) => char !== document.editingConnection.char).includes(newChar)) {
+    if (["L", "R", "S"].includes(move) && !Object.keys(document.nodes[document.editingConnection.node].connections).filter((char) => char !== document.editingConnection.char).includes(modifiedChar)) {
         const endNode = document.nodes[document.editingConnection.node].connections[document.editingConnection.char].node;
         const arrowCurve = document.nodes[document.editingConnection.node].connections[document.editingConnection.char].arrowCurve;
         delete document.nodes[document.editingConnection.node].connections[document.editingConnection.char];
-        document.nodes[document.editingConnection.node].connections[newChar] = {
+        document.nodes[document.editingConnection.node].connections[modifiedChar] = {
             node: endNode,
-            replaceChar: replaceChar,
+            newChar: newChar,
             move: move,
             arrowCurve: arrowCurve,
         }

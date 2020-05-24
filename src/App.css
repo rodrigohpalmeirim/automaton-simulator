@@ -126,7 +126,7 @@
   display: none;
 }
 
-.pane-content a {
+.pane-content .link {
   text-decoration: underline;
   color: #D8DEE9;
   cursor: pointer;

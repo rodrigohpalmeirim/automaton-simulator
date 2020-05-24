@@ -1,4 +1,3 @@
-rename "replaceChar" to "newChar"
 check performance
 add normal font
 add accepted and rejected states

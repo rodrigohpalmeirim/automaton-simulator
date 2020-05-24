@@ -7,13 +7,13 @@ export const bouncer = `{
       "connections": {
           "": {
           "node": "q0",
-          "replaceChar": "",
+          "newChar": "",
           "move": "L",
           "arrowCurve": 0
           },
           "|": {
           "node": "q1",
-          "replaceChar": "|",
+          "newChar": "|",
           "move": "R",
           "arrowCurve": 25
           }
@@ -25,13 +25,13 @@ export const bouncer = `{
       "connections": {
           "|": {
           "node": "q0",
-          "replaceChar": "|",
+          "newChar": "|",
           "move": "L",
           "arrowCurve": 25
           },
           "": {
           "node": "q1",
-          "replaceChar": "",
+          "newChar": "",
           "move": "R",
           "arrowCurve": 0
           }

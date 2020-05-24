@@ -6,9 +6,9 @@ function loop() {
     for (const char in document.nodes[document.state].connections) {
         if (char === document.chars[document.focusedCharId]) {
             const connection = document.nodes[document.state].connections[char];
-            document.chars[document.focusedCharId] = connection.replaceChar;
+            document.chars[document.focusedCharId] = connection.newChar;
             try {
-                document.querySelector("#tape input[num='" + document.focusedCharId + "']").value = connection.replaceChar;
+                document.querySelector("#tape input[num='" + document.focusedCharId + "']").value = connection.newChar;
             } catch (e) { }
             if (connection.move === "L") {
                 document.focusedCharId = document.focusedCharId - 1;

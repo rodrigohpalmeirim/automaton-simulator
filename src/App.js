@@ -218,8 +218,8 @@ export default class App extends Component {
                 return Object.keys(document.nodes[id].connections).map((char, key) => {
                   if (
                     (char.length > 1 && char !== "temp") ||
-                    typeof document.nodes[id].connections[char].replaceChar !== "string" ||
-                    document.nodes[id].connections[char].replaceChar.length > 1 ||
+                    typeof document.nodes[id].connections[char].newChar !== "string" ||
+                    document.nodes[id].connections[char].newChar.length > 1 ||
                     typeof document.nodes[id].connections[char].move !== "string" ||
                     typeof document.nodes[id].connections[char].arrowCurve !== "number" ||
                     !["L", "R", "S"].includes(document.nodes[id].connections[char].move)
@@ -235,7 +235,7 @@ export default class App extends Component {
                     document.nodes[document.nodes[id].connections[char].node].x,
                     document.nodes[document.nodes[id].connections[char].node].y,
                     30,
-                    (char === "temp") ? "" : (char ? char : " ") + "→" + (document.nodes[id].connections[char].replaceChar ? document.nodes[id].connections[char].replaceChar : " ") + "," + document.nodes[id].connections[char].move
+                    (char === "temp") ? "" : (char ? char : " ") + "→" + (document.nodes[id].connections[char].newChar ? document.nodes[id].connections[char].newChar : " ") + "," + document.nodes[id].connections[char].move
                   );
                 });
               })}
@@ -306,7 +306,7 @@ export default class App extends Component {
             </div>
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
-                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
+                <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="newChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
               </form>
             )}
             <div className="pane" style={{ height: 450, width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
