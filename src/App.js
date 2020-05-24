@@ -162,6 +162,11 @@ export default class App extends Component {
 
       if (document.running && event.key === "Escape")
         stop();
+
+      if (event.ctrlKey && event.key === "c") {
+        navigator.clipboard.writeText(document.getElementById("json").value);
+      }
+
     }
 
     if (event.ctrlKey && event.key === "s") {
@@ -381,7 +386,7 @@ export default class App extends Component {
                     <FontAwesomeIcon icon={faCheck} />
                     <span className="tooltip">Apply</span>
                   </div> :
-                  <div className="toolbar-button" onClick={() => { navigator.clipboard.writeText(document.getElementById("json").value)}}>
+                  <div className="toolbar-button" onClick={() => { navigator.clipboard.writeText(document.getElementById("json").value); }}>
                     <FontAwesomeIcon icon={faCopy} />
                     <span className="tooltip">Copy</span>
                   </div>
