@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faChevronLeft, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faChevronLeft, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
 import { updateTape, dragTape, tapeMouseDownHandler } from './tape';
 import { createConnection, editConnection, applyConnectionChanges, cancelConnection, removeConnection } from './connection';
 import { run, stop, changeSpeed } from './simulation';
-import { parseJSON, updateJSON } from './json'
-import { upload, download } from './file'
+import { parseJSON, updateJSON } from './json';
+import { upload, download, readFile } from './file';
+import { binaryCounter } from './examples/binary-counter';
+import { bouncer } from './examples/bouncer';
 export default class App extends Component {
 
   constructor(props) {
@@ -41,14 +43,16 @@ export default class App extends Component {
     document.freeEdit = false;
     document.speed = 1;
 
-    if (!window.localStorage.getItem("pane"))
-      window.localStorage.setItem("pane", window.innerWidth > 1000 ? "show" : "hide");
+    if (!window.localStorage.getItem("json-pane"))
+      window.localStorage.setItem("json-pane", window.innerWidth > 1000 ? "show" : "hide");
+    if (!window.localStorage.getItem("help-pane"))
+      window.localStorage.setItem("help-pane", "show");
 
     document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
 
     document.nodes = {
       q0: {
-        x: Math.round((window.innerWidth - 400) / 2),
+        x: Math.round((window.innerWidth) / 2),
         y: Math.round((window.innerHeight - document.tapeHeight) / 2),
         connections: {}
       }
@@ -69,7 +73,7 @@ export default class App extends Component {
     window.addEventListener("resize", () => {
       document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
       if (window.innerWidth < 1000)
-        window.localStorage.setItem("pane", "hide");
+        window.localStorage.setItem("json-pane", "hide");
       updateTape();
       document.update();
     });
@@ -137,10 +141,27 @@ export default class App extends Component {
       document.update();
     }
 
-    if (event.key === "j" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-      window.localStorage.setItem("pane", window.localStorage.getItem("pane") === "show" ? "hide" : "show");
-      document.freeEdit = false;
-      document.update();
+    if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+      if (event.key === "j") {
+        window.localStorage.setItem("json-pane", window.localStorage.getItem("json-pane") === "show" ? "hide" : "show");
+        document.freeEdit = false;
+        document.update();
+      }
+  
+      if (event.key === "h") {
+        window.localStorage.setItem("help-pane", window.localStorage.getItem("help-pane") === "show" ? "hide" : "show");
+        document.update();
+      }
+
+      if (event.key === " ") {
+        if (document.running)
+          stop();
+        else
+          run();
+      }
+  
+      if (document.running && event.key === "Escape")
+        stop();
     }
 
     if (event.ctrlKey && event.key === "s") {
@@ -148,16 +169,6 @@ export default class App extends Component {
       document.freeEdit = false;
       parseJSON(document.getElementById("json").value);
     }
-
-    if (event.key === " ") {
-      if (document.running)
-        stop();
-      else
-        run();
-    }
-
-    if (document.running && event.key === "Escape")
-      stop();
   }
 
   contextMenuHandler(event) {
@@ -232,6 +243,11 @@ export default class App extends Component {
               {Object.keys(document.nodes).map((id) => renderNode(id))}
             </svg>
             <div className="topbar">
+              <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => { window.localStorage.setItem("help-pane", window.localStorage.getItem("help-pane") === "show" ? "hide" : "show"); document.update(); }}>
+                <FontAwesomeIcon icon={faQuestionCircle} />
+                <span className="tooltip">Help</span>
+              </div>
+              <div style={{ flexGrow: 1 }}></div>
               <div className="toolbar-button" style={{ width: 50, height: 50 }}>
                 <input type="file" text="" style={{ position: "absolute", width: 50, height: 50, marginLeft: -10, opacity: 0, cursor: "pointer" }} onChange={(event) => { upload(event) }} />
                 <FontAwesomeIcon icon={faFileImport} />
@@ -293,17 +309,48 @@ export default class App extends Component {
                 <input className="connection-input" type="text" name="char" maxLength="1" autoFocus onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} /> → <input className="connection-input" type="text" name="replaceChar" maxLength="1" onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }} />, <input className="connection-input" type="text" name="move" maxLength="1" />
               </form>
             )}
+            <div className="pane" style={{ height: 450, width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
+              <div className="toolbar">
+                <span style={{ flexGrow: 1 }}>Help</span>
+                <div className="toolbar-button" onClick={() => { window.localStorage.setItem("help-pane", "hide"); document.update(); }}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </div>
+              </div>
+              <div className="pane-content">
+                <p style={{ marginTop: 0 }}>Create connections by pressing <span class="key">Shift</span> and dragging from a node.</p>
+                <p>Connections hold 3 values:<br />
+                  - the current character<br />
+                  - the replacement character<br />
+                  - the movement instruction
+                </p>
+                <p>The movement instructions are:<br />
+                  - 'R' (right)<br />
+                  - 'L' (left)<br />
+                  - 'S' (stay)
+                </p>
+                <p>Currently, there cannot be two connections with the same character comming from the same node.</p>
+                <p>Learn about Turing machines <a href="https://simple.m.wikipedia.org/wiki/Turing_machine" target="_blank">here</a>.</p>
+                <p>Curve the arrows by dragging the label.</p>
+                <p>On the right side there is the JSON pane which you can toggle by pressing <span class="key">J</span>. It contains all the information that defines the automaton and the tape. Unless the 'free edit' mode is enabled, it ignores any input that would break the JSON or the automaton.</p>
+                <p>Start the simulation by pressing <span class="key">Space</span> and control its speed using the buttons on the bottom right corner.</p>
+                <p>Here are some examples:<br />
+                  - <a onClick={() => readFile(bouncer, parseJSON)}>Bouncer</a><br />
+                  - <a onClick={() => readFile(binaryCounter, parseJSON)}>Binary counter</a>
+                </p>
+              </div>
+            </div>
             <div className="blocker" style={{ opacity: document.freeEdit ? 0.5 : 0, pointerEvents: document.freeEdit ? "auto" : "none" }} />
-            <div id="json-pane" style={{
+            <div className="pane" style={{
+              top: 100,
               height: window.innerHeight - document.tapeHeight - 200,
-              right: window.localStorage.getItem("pane") === "show" ? 20 : -360,
+              right: window.localStorage.getItem("json-pane") === "show" ? 20 : -360,
             }}>
               <div className="toolbar">
-                {window.localStorage.getItem("pane") === "show" ?
-                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("pane", "hide"); document.freeEdit = false; document.update(); }}>
+                {window.localStorage.getItem("json-pane") === "show" ?
+                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("json-pane", "hide"); document.freeEdit = false; document.update(); }}>
                     <FontAwesomeIcon icon={faChevronRight} />
                   </div> :
-                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("pane", "show");  document.update(); }}>
+                  <div className="toolbar-button" onClick={() => { window.localStorage.setItem("json-pane", "show"); document.update(); }}>
                     <FontAwesomeIcon icon={faChevronLeft} />
                   </div>
                 }
@@ -333,7 +380,7 @@ export default class App extends Component {
                   </div>
                 }
               </div>
-              <textarea id="json" onInput={() => { if (!document.freeEdit) parseJSON(document.getElementById("json").value) }} defaultValue={updateJSON()} spellCheck="false" />
+              <textarea className="pane-content" id="json" onInput={() => { if (!document.freeEdit) parseJSON(document.getElementById("json").value) }} defaultValue={updateJSON()} spellCheck="false" />
             </div>
             <div className="blocker" style={{ opacity: 0, pointerEvents: document.running ? "auto" : "none" }} />
             {document.running && (

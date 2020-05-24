@@ -1,15 +1,18 @@
 import { parseJSON } from './json';
 
+export function readFile(file, callback) {
+    if (!(file instanceof Blob))
+        file = new Blob([file], { type: 'application/json' });
+    var reader = new FileReader();
+    reader.addEventListener('load', (e) => {
+        callback(e.target.result);
+    });
+    reader.readAsBinaryString(file);
+}
+
 export function upload(event) {
     if (event.target.files && event.target.files[0]) {
-        var myFile = event.target.files[0];
-        var reader = new FileReader();
-
-        reader.addEventListener('load', function (e) {
-            parseJSON(e.target.result);
-        });
-
-        reader.readAsBinaryString(myFile);
+        readFile(event.target.files[0], parseJSON);
         event.target.value = "";
     }
 }
