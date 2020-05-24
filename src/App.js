@@ -309,14 +309,14 @@ export default class App extends Component {
                 <input className="connection-input" type="text" name="char" maxLength="1" autoFocus
                   onFocus={(event) => {event.target.select();}}
                   onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
-                  defaultValue={document.selectedConnectionChar}
+                  defaultValue={(document.selectedConnectionChar !== "temp") ? document.selectedConnectionChar : ""}
                 /> → <input className="connection-input" type="text" name="newChar" maxLength="1"
                   onFocus={(event) => {event.target.select();}}
-                  defaultValue={document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].newChar}
+                  defaultValue={(document.selectedConnectionChar !== "temp") ? document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].newChar : ""}
                   onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
                 />, <input className="connection-input" type="text" name="move" maxLength="1"
                   onFocus={(event) => {event.target.select();}}
-                  defaultValue={document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].move}
+                  defaultValue={(document.selectedConnectionChar !== "temp") ? document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].move : ""}
                 />
               </form>
             )}
