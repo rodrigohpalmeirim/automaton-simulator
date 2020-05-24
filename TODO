@@ -1,7 +1,5 @@
 change README
-check performance
 fix crashing on invalid localStorage
-add normal font
 add accepted and rejected states
 add "pause" and "next" buttons
 add control tape start pos
