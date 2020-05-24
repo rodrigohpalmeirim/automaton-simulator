@@ -307,20 +307,20 @@ export default class App extends Component {
             {document.editingConnection && (
               <form id="connection-box" style={{ left: document.arrowCenter.x, top: document.arrowCenter.y }}>
                 <input className="connection-input" type="text" name="char" maxLength="1" autoFocus
-                  onFocus={(event) => {event.target.select();}}
+                  onFocus={(event) => { event.target.select(); }}
                   onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
                   defaultValue={(document.selectedConnectionChar !== "temp") ? document.selectedConnectionChar : ""}
                 /> → <input className="connection-input" type="text" name="newChar" maxLength="1"
-                  onFocus={(event) => {event.target.select();}}
+                  onFocus={(event) => { event.target.select(); }}
                   defaultValue={(document.selectedConnectionChar !== "temp") ? document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].newChar : ""}
                   onInput={(event) => { event.target.nextElementSibling.focus(); if (event.target.value === " ") event.target.value = "␣" }}
                 />, <input className="connection-input" type="text" name="move" maxLength="1"
-                  onFocus={(event) => {event.target.select();}}
+                  onFocus={(event) => { event.target.select(); }}
                   defaultValue={(document.selectedConnectionChar !== "temp") ? document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].move : ""}
                 />
               </form>
             )}
-            <div className="pane" style={{ height: Math.min(450, window.innerHeight - 120 - document.tapeHeight), width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
+            <div className="pane" style={{ height: Math.min(420, window.innerHeight - 120 - document.tapeHeight), width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
               <div className="toolbar">
                 <span style={{ flexGrow: 1 }}>Help</span>
                 <div className="toolbar-button" onClick={() => { window.localStorage.setItem("help-pane", "hide"); document.update(); }}>
