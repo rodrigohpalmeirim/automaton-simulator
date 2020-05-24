@@ -317,7 +317,7 @@ export default class App extends Component {
                 </div>
               </div>
               <div className="pane-content">
-                <p style={{ marginTop: 0 }}>Create connections by pressing <span class="key">Shift</span> and dragging from a node.</p>
+                <p style={{ marginTop: 0 }}>Create connections by pressing <span className="key">Shift</span> and dragging from a node.</p>
                 <p>Connections hold 3 values:<br />
                   - the current character<br />
                   - the replacement character<br />
@@ -329,13 +329,13 @@ export default class App extends Component {
                   - 'S' (stay)
                 </p>
                 <p>Currently, there cannot be two connections with the same character comming from the same node.</p>
-                <p>Learn about Turing machines <a href="https://simple.m.wikipedia.org/wiki/Turing_machine" target="_blank">here</a>.</p>
+                <p>Learn about Turing machines <a className="link" href="https://simple.m.wikipedia.org/wiki/Turing_machine" target="_blank" rel="noopener noreferrer">here</a>.</p>
                 <p>Curve the arrows by dragging the label.</p>
-                <p>On the right side there is the JSON pane which you can toggle by pressing <span class="key">J</span>. It contains all the information that defines the automaton and the tape. Unless the 'free edit' mode is enabled, it ignores any input that would break the JSON or the automaton.</p>
-                <p>Start the simulation by pressing <span class="key">Space</span> and control its speed using the buttons on the bottom right corner.</p>
+                <p>On the right side there is the JSON pane which you can toggle by pressing <span className="key">J</span>. It contains all the information that defines the automaton and the tape. Unless the 'free edit' mode is enabled, it ignores any input that would break the JSON or the automaton.</p>
+                <p>Start the simulation by pressing <span className="key">Space</span> and control its speed using the buttons on the bottom right corner.</p>
                 <p>Here are some examples:<br />
-                  - <a onClick={() => readFile(bouncer, parseJSON)}>Bouncer</a><br />
-                  - <a onClick={() => readFile(binaryCounter, parseJSON)}>Binary counter</a>
+                  - <span className="link" onClick={() => readFile(bouncer, parseJSON)}>Bouncer</span><br />
+                  - <span className="link" onClick={() => readFile(binaryCounter, parseJSON)}>Binary counter</span>
                 </p>
               </div>
             </div>
