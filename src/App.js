@@ -320,7 +320,7 @@ export default class App extends Component {
                 />
               </form>
             )}
-            <div className="pane" style={{ height: 450, width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
+            <div className="pane" style={{ height: Math.min(450, window.innerHeight - 120 - document.tapeHeight), width: 350, top: 100, left: window.localStorage.getItem("help-pane") === "show" ? 20 : -400 }}>
               <div className="toolbar">
                 <span style={{ flexGrow: 1 }}>Help</span>
                 <div className="toolbar-button" onClick={() => { window.localStorage.setItem("help-pane", "hide"); document.update(); }}>
