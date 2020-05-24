@@ -154,6 +154,8 @@ input, textarea {
 
 #json {
   font-size: 18px;
+  line-height: 20px;
+  resize: none;
   font-family: mononokiRegular;
   text-align: left;
 }
