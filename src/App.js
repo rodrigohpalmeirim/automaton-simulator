@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faChevronLeft, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
+import { faChevronRight, faChevronLeft, faCopy, faPencilAlt, faCheck, faTimes, faFileImport, faFileExport, faQuestionCircle, faBug } from '@fortawesome/free-solid-svg-icons'
 import './App.css';
 import { renderNode, dragNode, createNode, removeNode, nodeMouseDownHandler } from './node';
 import { renderArrow, dragArrow, dragLabel } from './arrow';
@@ -262,6 +262,10 @@ export default class App extends Component {
               <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => { window.localStorage.setItem("help-pane", window.localStorage.getItem("help-pane") === "show" ? "hide" : "show"); document.update(); }}>
                 <FontAwesomeIcon icon={faQuestionCircle} />
                 <span className="tooltip">Help</span>
+              </div>
+              <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => { window.open("https://github.com/rodrigohpalmeirim/automaton-simulator/issues","_blank"); }}>
+                <FontAwesomeIcon icon={faBug} />
+                <span className="tooltip">Report issues</span>
               </div>
               <div style={{ flexGrow: 1 }}></div>
               <div className="toolbar-button" style={{ width: 50, height: 50 }}>
