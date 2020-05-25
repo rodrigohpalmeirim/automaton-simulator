@@ -5,13 +5,19 @@ import { removeConnection } from './connection';
 export function renderNode(id) {
     if (typeof document.nodes[id].x !== "number" || typeof document.nodes[id].y !== "number")
         throw TypeError;
+    if (!["normal", "accept", "reject"].includes(document.nodes[id].type))
+        throw TypeError;
 
     return (
         <g key={id} id={id} type="node" onMouseDown={() => {
             document.selectedNodeId = id;
             document.selectedConnectionChar = "temp";
         }}>
-            <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill={ document.state === id ? "#E5E9F0" : "#88C0D0"} />
+            <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill={
+                (document.nodes[id].type === "accept" && (document.state === id ? "#e3ffcc" : "#A3BE8C")) ||
+                (document.nodes[id].type === "reject" && (document.state === id ? "#ffb3ba" : "#BF616A")) ||
+                (document.state === id ? "#E5E9F0" : "#88C0D0")
+            } />
             <text x={document.nodes[id].x} y={document.nodes[id].y + 6} textAnchor="middle" fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text>
         </g>
     );
@@ -29,7 +35,7 @@ export function createNode(x, y) {
             break;
     }
     var newId = "q" + i;
-    document.nodes[newId] = { x: x, y: y, connections: {} }
+    document.nodes[newId] = { x: x, y: y, type: "normal", connections: {} }
     document.update();
     return newId;
 }

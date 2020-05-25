@@ -4,6 +4,7 @@ export const binaryCounter = `{
     "q0": {
       "x": 500,
       "y": 350,
+      "type": "normal",
       "connections": {
         "0": {
           "node": "q1",
@@ -28,6 +29,7 @@ export const binaryCounter = `{
     "q1": {
       "x": 800,
       "y": 350,
+      "type": "normal",
       "connections": {
         "0": {
           "node": "q1",

@@ -209,7 +209,10 @@ export default class App extends Component {
         document.showContextMenu = true;
         document.contextMenu.options = [
           <p key="0" onClick={() => { removeNode(document.selectedNodeId) }}>Remove node</p>,
-          <p key="1" onClick={() => { document.startState = document.state = document.selectedNodeId }}>Define as start state</p>
+          (document.startState !== document.selectedNodeId) && <p key="1" onClick={() => { document.startState = document.state = document.selectedNodeId }}>Define as start state</p>,
+          (document.nodes[document.selectedNodeId].type !== "normal") && <p key="2" onClick={() => { document.nodes[document.selectedNodeId].type = "normal" }}>Define as normal state</p>,
+          (document.nodes[document.selectedNodeId].type !== "accept") && <p key="3" onClick={() => { document.nodes[document.selectedNodeId].type = "accept" }}>Define as accept state</p>,
+          (document.nodes[document.selectedNodeId].type !== "reject") && <p key="4" onClick={() => { document.nodes[document.selectedNodeId].type = "reject" }}>Define as reject state</p>,
         ];
       }
     } catch (e) { }
@@ -299,8 +302,13 @@ export default class App extends Component {
               <div id="cursor" style={{
                 height: document.tapeHeight - 20,
                 width: document.tapeHeight - 20,
+                borderColor: !document.stalled ? "#88C0D0" : (
+                  (document.nodes[document.state].type === "accept" && "#A3BE8C") ||
+                  (document.nodes[document.state].type === "reject" && "#BF616A") ||
+                  "#E5E9F0"
+                ),
                 left: document.running ? window.innerWidth / 2 - document.tapeHeight / 2 : document.focusedCharId * document.tapeHeight + document.tapePos,
-                transition: document.running ? ".5s" : "0s",
+                transition: document.running ? 0.5 / document.speed + "s" : 0 + "s",
               }} />
             </div>
             {!document.running && (

@@ -4,6 +4,7 @@ export const bouncer = `{
       "q0": {
       "x": 500,
       "y": 350,
+      "type": "normal",
       "connections": {
           "": {
           "node": "q0",
@@ -22,6 +23,7 @@ export const bouncer = `{
       "q1": {
       "x": 750,
       "y": 350,
+      "type": "normal",
       "connections": {
           "|": {
           "node": "q0",

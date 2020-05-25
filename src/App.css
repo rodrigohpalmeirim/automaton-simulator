@@ -101,7 +101,7 @@ input, textarea {
 
 #cursor {
   position: absolute;
-  border: 10px solid #88C0D0;
+  border: 10px solid;
   pointer-events: none;
 }
 

@@ -3,8 +3,10 @@ import { updateTape } from './tape';
 var interval;
 
 function loop() {
+    document.stalled = true;
     for (const char in document.nodes[document.state].connections) {
         if (char === document.chars[document.focusedCharId]) {
+            document.stalled = false;
             const connection = document.nodes[document.state].connections[char];
             document.chars[document.focusedCharId] = connection.newChar;
             try {
@@ -22,6 +24,7 @@ function loop() {
             break;
         }
     }
+    document.update();
 }
 
 export function run() {
@@ -41,6 +44,7 @@ export function run() {
 export function stop() {
     clearInterval(interval);
     document.running = false;
+    document.stalled = false;
     document.focusedCharId = document.startCharId;
     document.state = document.startState;
     for (const input of document.querySelectorAll("#tape input")) {
