@@ -427,7 +427,6 @@ export default class App extends Component {
         </div>
       );
     } catch (e) {
-      console.log("DEBUG: " + e);
       if (document.firstUpdate) {
         window.localStorage.removeItem("json");
         reset();
