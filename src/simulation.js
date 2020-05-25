@@ -50,6 +50,8 @@ export function stop() {
     for (const input of document.querySelectorAll("#tape input")) {
         input.value = document.initChars[input.getAttribute("num")];
     }
+    document.tapePos = window.innerWidth / 2 - document.tapeHeight / 2 - document.focusedCharId * document.tapeHeight;
+    updateTape();
     document.update();
 }
 
