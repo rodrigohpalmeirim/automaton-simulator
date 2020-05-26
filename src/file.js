@@ -1,4 +1,5 @@
 import { parseJSON } from './json';
+import { centerViewport } from './viewport';
 
 export function readFile(file, callback) {
     if (!(file instanceof Blob))
@@ -12,7 +13,7 @@ export function readFile(file, callback) {
 
 export function upload(event) {
     if (event.target.files && event.target.files[0]) {
-        readFile(event.target.files[0], parseJSON);
+        readFile(event.target.files[0], (json) => {parseJSON(json); centerViewport();});
         event.target.value = "";
     }
 }

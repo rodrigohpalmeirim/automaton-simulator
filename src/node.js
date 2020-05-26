@@ -13,19 +13,19 @@ export function renderNode(id) {
             document.selectedNodeId = id;
             document.selectedConnectionChar = "temp";
         }}>
-            <circle cx={document.nodes[id].x} cy={document.nodes[id].y} r={document.nodeRadius} fill={
+            <circle cx={document.nodes[id].x + document.viewportPos.x} cy={document.nodes[id].y + document.viewportPos.y} r={document.nodeRadius} fill={
                 (document.nodes[id].type === "accept" && (document.state === id ? "#e3ffcc" : "#A3BE8C")) ||
                 (document.nodes[id].type === "reject" && (document.state === id ? "#ffb3ba" : "#BF616A")) ||
                 (document.state === id ? "#E5E9F0" : "#88C0D0")
             } />
-            <text x={document.nodes[id].x} y={document.nodes[id].y + 6} textAnchor="middle" fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text>
+            <text x={document.nodes[id].x + document.viewportPos.x} y={document.nodes[id].y + document.viewportPos.y + 6} textAnchor="middle" fontSize="20" fontFamily="mononokiRegular" fill="#2E3440">{id}</text>
         </g>
     );
 }
 
 export function dragNode(event) {
-    document.nodes[document.selectedNodeId].x = event.pageX - document.offset.x;
-    document.nodes[document.selectedNodeId].y = event.pageY - document.offset.y;
+    document.nodes[document.selectedNodeId].x = event.pageX - document.nodeOffset.x;
+    document.nodes[document.selectedNodeId].y = event.pageY - document.nodeOffset.y;
     document.update();
 }
 
@@ -54,7 +54,7 @@ export function removeNode(nodeId) {
 export function nodeMouseDownHandler(event) {
     if (event.button === 0 && event.target.parentElement.getAttribute("id") !== document.tempNode) {
         document.selectedNodeId = event.target.parentElement.getAttribute("id");
-        document.offset = {
+        document.nodeOffset = {
             x: event.pageX - document.nodes[document.selectedNodeId].x,
             y: event.pageY - document.nodes[document.selectedNodeId].y
         };

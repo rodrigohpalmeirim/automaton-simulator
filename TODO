@@ -1,3 +1,4 @@
+make json only sync to localStorage on unload
 add tape auto-focus next
 add "pause" and "step" buttons
 add control tape start pos
@@ -5,7 +6,6 @@ add option to lock tape
 add non-deterministic functionality
 add drag and drop to upload
 add undo/redo
-add panning
 add node renaming
 add group selection
 add multiple connections in a single arrow

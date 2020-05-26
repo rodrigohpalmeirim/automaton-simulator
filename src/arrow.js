@@ -108,8 +108,8 @@ export function renderArrow(key, nodeId, char, x1, y1, x2, y2, endDistance = 0, 
 export function dragArrow(event) {
     document.arrowPos = {
         node: document.selectedNodeId,
-        x1: document.nodes[document.selectedNodeId].x,
-        y1: document.nodes[document.selectedNodeId].y,
+        x1: document.nodes[document.selectedNodeId].x + document.viewportPos.x,
+        y1: document.nodes[document.selectedNodeId].y + document.viewportPos.y,
         x2: event.pageX,
         y2: event.pageY
     }
@@ -119,10 +119,10 @@ export function dragArrow(event) {
 export function dragLabel(event) {
     const startNode = document.nodes[document.selectedNodeId];
     const endNode = document.nodes[document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].node]
-    const x1 = startNode.x;
-    const y1 = startNode.y;
-    const x2 = endNode.x;
-    const y2 = endNode.y;
+    const x1 = startNode.x + document.viewportPos.x;
+    const y1 = startNode.y + document.viewportPos.y;
+    const x2 = endNode.x + document.viewportPos.x;
+    const y2 = endNode.y + document.viewportPos.y;
 
     if (document.selectedNodeId === document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].node) {
         document.nodes[document.selectedNodeId].connections[document.selectedConnectionChar].arrowCurve = event.pageY - y1 + 64;

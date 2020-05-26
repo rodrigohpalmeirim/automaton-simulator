@@ -9,6 +9,7 @@ import { createConnection, editConnection, applyConnectionChanges, cancelConnect
 import { run, stop, changeSpeed } from './simulation';
 import { parseJSON, updateJSON } from './json';
 import { upload, download, readFile } from './file';
+import { centerViewport, pan } from './viewport';
 import { binaryCounter } from './examples/binary-counter';
 import { bouncer } from './examples/bouncer';
 
@@ -29,6 +30,7 @@ export function reset() {
   document.selectedConnectionChar = "temp";
   document.freeEdit = false;
   document.speed = 1;
+  document.viewportPos = { x: 0, y: 0 };
 
   if (!window.localStorage.getItem("json-pane"))
     window.localStorage.setItem("json-pane", window.innerWidth > 1000 ? "show" : "hide");
@@ -66,6 +68,7 @@ export default class App extends Component {
     this.mouseDownHandler = this.mouseDownHandler.bind(this);
     this.keyDownHandler = this.keyDownHandler.bind(this);
     this.contextMenuHandler = this.contextMenuHandler.bind(this);
+    this.svgMouseDownHandler = this.svgMouseDownHandler.bind(this);
 
     document.nodeRadius = 25;
     document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 };
@@ -74,6 +77,9 @@ export default class App extends Component {
     document.firstUpdate = true;
 
     reset();
+
+    if (window.localStorage.getItem("viewport-pos"))
+      document.viewportPos = JSON.parse(window.localStorage.getItem("viewport-pos"));
   }
 
   componentDidMount() {
@@ -91,6 +97,9 @@ export default class App extends Component {
     document.addEventListener("mousedown", this.mouseDownHandler);
     document.addEventListener("mouseup", this.mouseUpHandler);
     document.addEventListener("contextmenu", this.contextMenuHandler);
+    window.addEventListener("beforeunload", () => {
+      window.localStorage.setItem("viewport-pos", JSON.stringify(document.viewportPos));
+    });
 
     if (window.localStorage.getItem("json"))
       parseJSON(window.localStorage.getItem("json"));
@@ -111,19 +120,23 @@ export default class App extends Component {
         nodeMouseDownHandler(event);
       }
     } catch (e) { }
+    if (event.target.tagName === "svg") {
+      this.svgMouseDownHandler(event);
+    }
     document.tempNode = "";
     document.update();
   }
 
   mouseUpHandler(event) {
     document.removeEventListener("mousemove", dragLabel);
+    document.removeEventListener("mousemove", pan);
     if (document.draggingNode) document.removeEventListener("mousemove", dragNode);
     if (document.draggingArrow) {
       document.removeEventListener("mousemove", dragArrow);
       if (event.target.parentElement.getAttribute("type") === "node") {
         createConnection(event.target.parentElement.getAttribute("id"));
       } else {
-        const newId = createNode(event.pageX, event.pageY);
+        const newId = createNode(event.pageX - document.viewportPos.x, event.pageY - document.viewportPos.y);
         document.tempNode = newId;
         createConnection(newId);
       }
@@ -132,6 +145,16 @@ export default class App extends Component {
     document.draggingArrow = false;
     document.arrowPos = { x1: 0, y1: 0, x2: 0, y2: 0 }
     document.update();
+  }
+
+  svgMouseDownHandler(event) {
+    if (event.button === 0) {
+      document.offset = {
+        x: event.pageX - document.viewportPos.x,
+        y: event.pageY - document.viewportPos.y
+      };
+      document.addEventListener("mousemove", pan);
+    }
   }
 
   keyDownHandler(event) {
@@ -195,7 +218,7 @@ export default class App extends Component {
         event.preventDefault();
         document.showContextMenu = true;
         document.contextMenu.options = [
-          <p key="0" onClick={() => { createNode(document.contextMenu.x, document.contextMenu.y) }}>Add node</p>
+          <p key="0" onClick={() => { createNode(document.contextMenu.x - document.viewportPos.x, document.contextMenu.y - document.viewportPos.y) }}>Add node</p>
         ];
       } else if (event.target.parentElement.getAttribute("type") === "arrow") { // Connection
         event.preventDefault();
@@ -246,10 +269,10 @@ export default class App extends Component {
                     key,
                     id,
                     char,
-                    document.nodes[id].x,
-                    document.nodes[id].y,
-                    document.nodes[document.nodes[id].connections[char].node].x,
-                    document.nodes[document.nodes[id].connections[char].node].y,
+                    document.nodes[id].x + document.viewportPos.x,
+                    document.nodes[id].y + document.viewportPos.y,
+                    document.nodes[document.nodes[id].connections[char].node].x + document.viewportPos.x,
+                    document.nodes[document.nodes[id].connections[char].node].y + document.viewportPos.y,
                     30,
                     (char === "temp") ? "" : (char ? char : " ") + "→" + (document.nodes[id].connections[char].newChar ? document.nodes[id].connections[char].newChar : " ") + "," + document.nodes[id].connections[char].move
                   );
@@ -263,7 +286,7 @@ export default class App extends Component {
                 <FontAwesomeIcon icon={faQuestionCircle} />
                 <span className="tooltip">Help</span>
               </div>
-              <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => { window.open("https://github.com/rodrigohpalmeirim/automaton-simulator/issues","_blank"); }}>
+              <div className="toolbar-button" style={{ width: 50, height: 50 }} onClick={() => { window.open("https://github.com/rodrigohpalmeirim/automaton-simulator/issues", "_blank"); }}>
                 <FontAwesomeIcon icon={faBug} />
                 <span className="tooltip">Report issues</span>
               </div>
@@ -370,8 +393,8 @@ export default class App extends Component {
                 <p>On the right side there is the JSON pane which you can toggle by pressing <span className="key">J</span>. It contains all the information that defines the automaton and the tape. Unless the 'free edit' mode is enabled, it ignores any input that would break the JSON or the automaton.</p>
                 <p>Start the simulation by pressing <span className="key">Space</span> and control its speed using the buttons on the bottom right corner.</p>
                 <p>Here are some examples:<br />
-                  - <span className="link" onClick={() => readFile(bouncer, parseJSON)}>Bouncer</span><br />
-                  - <span className="link" onClick={() => readFile(binaryCounter, parseJSON)}>Binary counter</span>
+                  - <span className="link" onClick={() => readFile(bouncer, (json) => {parseJSON(json); centerViewport();})}>Bouncer</span><br />
+                  - <span className="link" onClick={() => readFile(binaryCounter, (json) => {parseJSON(json); centerViewport();})}>Binary counter</span>
                 </p>
               </div>
             </div>
